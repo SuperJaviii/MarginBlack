@@ -33,8 +33,8 @@ if (len(b)==6):
 	
 	datos = datos[datos['project'].str.contains("-000193-", case=True)]
 	
-	engine = sqlalchemy.create_engine('mysql+pymysql://root:everis@localhost:3307/black_margin')
-	#engine = sqlalchemy.create_engine('mysql+pymysql://root:password@localhost/world')
+	#engine = sqlalchemy.create_engine('mysql+pymysql://root:everis@localhost:3307/black_margin')
+	engine = sqlalchemy.create_engine('mysql+pymysql://root:@localhost/margin')
 	
 	datos.to_sql("result", engine, if_exists = "append", index = False)
 	
@@ -62,8 +62,8 @@ if (len(b)==6):
 
 	if primero==0:
 		datos.to_sql("result", engine,if_exists = "replace", index = False)
+
 	else:
-		
 		datos.to_sql("result", engine,if_exists = "append", index = False)
 		
 	conn1=engine.connect()
@@ -76,7 +76,7 @@ if (len(b)==6):
 		df1 = df1.rename(columns={columnas1[k]:str(datos.columns[k])})
 		
 	df2=df1.sort_values(by='month', ascending=True)
-	
+
 	df2.to_sql("result", engine, if_exists = "replace", index = False)
 	
 	engine.execute("SET @@global.max_allowed_packet = 8388608;")
@@ -95,12 +95,12 @@ if (len(b)==6):
 		acumulado = acumulado.rename(columns={columnas[k]:str(datos.columns[k])})
 		
 	
-	writer = pd.ExcelWriter('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/historicos_black_margin/result_acumulado.xlsx', engine='xlsxwriter')
+	#writer = pd.ExcelWriter('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/historicos_black_margin/result_acumulado.xlsx', engine='xlsxwriter')
 	
 		
 	
-	acumulado.to_excel(writer, index=False)
+	#sacumulado.to_excel(writer, index=False)
 
-	writer.save()
+	#writer.save()
 else:
 	print("La fecha introducida no es válida. Intentelo de nuevo")

@@ -25,7 +25,6 @@ if (len(b)==6):
 	
 	datos.horas_estabilizacion = list(map(lambda x: cambiarNAN(x), datos.horas_estabilizacion))
 	
-	
 	i = 0
 	while str(datos.month[i]) == "nan":
 		i+=1
@@ -78,8 +77,6 @@ if (len(b)==6):
 	
 	df2.to_sql("tls", engine, if_exists = "replace", index = False)
 	
-	
-	
 	existe = engine.execute("show tables like 'tls'");
 	for row in existe:
 		if not row:
@@ -96,34 +93,32 @@ if (len(b)==6):
 		
 	aux = acumulado
 	writer = pd.ExcelWriter('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/historicos_black_margin/tls_acumulado.xlsx', engine='xlsxwriter')
-	
-	
 	acumulado.to_excel(writer, index=False)
-
 	writer.save()
 	
-	columnasBuenas = ["id_employee", "persona"]
-					 
-	columnasTotal =list(aux.columns)
-
-	for e in columnasBuenas:
-		columnasTotal.remove(e)
+	#actualizamos la tabla de descripción de personas
+	#datos_pers = pd.read_excel("normbre_excel.xlsx")
+	#datos_pers.to_sql("des_persona", engine,if_exists = "replace", index = False)
+	
+	#writer1 = pd.ExcelWriter('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/historicos_black_margin/des_persona.xlsx', engine='xlsxwriter')
+	#datos_pers.to_excel(writer1, index=False)
+	#writer1.save()
+	
+	#columnasBuenas = ["id_employee", "persona"]				 
+	#columnasTotal =list(aux.columns)
+	#for e in columnasBuenas:
+		#columnasTotal.remove(e)
 		
-
-	aux = aux.drop(columnasTotal, axis=1)
-	aux1=aux.sort_values(by='id_employee')
+	#aux = aux.drop(columnasTotal, axis=1)
+	#aux1=aux.sort_values(by='id_employee')
 	
-	aux2 =aux1.drop_duplicates(subset='id_employee',keep='last')
+	#aux2 =aux1.drop_duplicates(subset='id_employee',keep='last')
 	
-	aux2.to_sql("des_persona", engine, if_exists = "replace", index= False)
+	#aux2.to_sql("des_persona", engine, if_exists = "replace", index= False)
 	
-	writer1 = pd.ExcelWriter('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/historicos_black_margin/des_persona.xlsx', engine='xlsxwriter')
-	
-	
-	
-	aux2.to_excel(writer1, index=False)
-
-	writer1.save()
+	#writer1 = pd.ExcelWriter('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/historicos_black_margin/des_persona.xlsx', engine='xlsxwriter')
+	#aux2.to_excel(writer1, index=False)
+	#writer1.save()
 
 else:
 	print('La fecha introducida no es válida. Intentelo de nuevo')
