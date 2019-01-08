@@ -3,6 +3,7 @@ import pymysql
 import sqlalchemy
 import sys
 from pandas import ExcelWriter
+import configparser
 
 while True:
 	try:
@@ -14,8 +15,8 @@ b=str(a)
 
 if (len(b)==6):	
 	datos = pd.read_excel(b + "_Result TH.xlsx")
-	datos.columns = list(map(lambda x: x.lower().replace(" ", "_").replace("-","_").replace("+","plus").replace("(", "").replace(")", ""), datos.columns))
-	datos.columns = list(map(lambda x: x.replace("á","a").replace("é","e").replace("í","i").replace("ó","o").replace("ú","u"), datos.columns))
+	datos.columns = list(map(lambda x: x.lower().replace(" ", "_").replace("-","_").replace("+","plus").replace("(", "").replace(")", "")
+						.replace("á","a").replace("é","e").replace("í","i").replace("ó","o").replace("ú","u"), datos.columns))
 
 	 
 	columnasBuenas = ["month", "project", "sector", "un", "external_subcontrating_revenue",
@@ -32,9 +33,22 @@ if (len(b)==6):
 	datos = datos.fillna(0.0)
 	
 	datos = datos[datos['project'].str.contains("-000193-", case=True)]
+
+	config = configparser.ConfigParser()
+	config.read("configuracion.ini")
 	
-	#engine = sqlalchemy.create_engine('mysql+pymysql://root:everis@localhost:3307/black_margin')
-	engine = sqlalchemy.create_engine('mysql+pymysql://root:@localhost/margin')
+	usuario = input(u"Introducir usario de conexion con el servidor: ")
+
+	usuario = usuario.upper()
+	password = config[usuario]["password"]
+	user = config[usuario]["user"]
+	host = config[usuario]["host"]
+	dataBase = config[usuario]["dataBase"]
+
+	print(password)
+
+	engine = sqlalchemy.create_engine('mysql+pymysql://'+user+':'+password+'@'+host+'/'+dataBase)
+	#engine = sqlalchemy.create_engine('mysql+pymysql://root:@localhost/margin')
 	
 	datos.to_sql("result", engine, if_exists = "append", index = False)
 	
@@ -51,9 +65,9 @@ if (len(b)==6):
 	lista=list(df['month'])
 	for i in range(len(lista)):
 		if lista[i] != a:
-			if primero==0:
+			if primero == 0:
 				
-				df[i:i+1].to_sql("result", engine, if_exists= "replace",index=False)
+				df[i:i+1].to_sql("result", engine, if_exists = "replace",index=False)
 				primero=1
 			elif (i==len(lista)-1):
 				df[i:].to_sql("result", engine, if_exists= "append",index=False)

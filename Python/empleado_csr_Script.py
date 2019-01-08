@@ -3,6 +3,7 @@ import pymysql
 import sqlalchemy
 import sys
 from pandas import ExcelWriter
+import configparser
 
 while True:
 	try:
@@ -18,19 +19,19 @@ if (len(b)==6):
 	datos_ext = propuestas.parse("detalle empleados External.Sub")
 
 	# tipificación nombres de columnas
-	datos.columns = list(map(lambda x: x.lower().replace(" ","_").replace("-","_").replace("+","plus").replace("account_month","month"), datos.columns))
-	datos.columns = list(map(lambda x: x.replace("(","").replace(")","").replace("á","a").replace("é","e").replace("í","i").replace("ó","o").replace("ú","u"), datos.columns))
+	datos.columns = list(map(lambda x: x.lower().replace(" ","_").replace("-","_").replace("+","plus").replace("(","").replace(")","")
+	.replace("á","a").replace("é","e").replace("í","i").replace("ó","o").replace("ú","u").replace("account_month","month"), datos.columns))
 
-	datos_ext.columns = list(map(lambda x: x.lower().replace(" ","_").replace("-","_").replace("+","plus").replace("account_month","month"), datos_ext.columns))
-	datos_ext.columns = list(map(lambda x: x.replace("(","").replace(")","").replace("á","a").replace("é","e").replace("í","i").replace("ó","o").replace("ú","u"), datos_ext.columns))
-	
-	datos=datos.rename(columns={'employee':'id_employee'})
-	datos_ext=datos_ext.rename(columns={'employee':'id_employee'})
+	datos_ext.columns = list(map(lambda x: x.lower().replace(" ","_").replace("-","_").replace("+","plus").replace("(","").replace(")","")
+	.replace("á","a").replace("é","e").replace("í","i").replace("ó","o").replace("ú","u").replace("account_month","month"), datos_ext.columns))
+
+	datos = datos.rename(columns={'employee':'id_employee'})
+	datos_ext = datos_ext.rename(columns={'employee':'id_employee'})
 
 	columnasBuenas = ["employee_category", "project", "hours","expense_month_adjusted", "month" , "id_employee"]
 
-	columnasTotal =list(datos.columns)
-	columnasTotal_ext =list(datos_ext.columns)
+	columnasTotal = list(datos.columns)
+	columnasTotal_ext = list(datos_ext.columns)
 	for e in columnasBuenas:
 		columnasTotal.remove(e)
 		columnasTotal_ext.remove(e)
@@ -44,23 +45,35 @@ if (len(b)==6):
 	datos = datos[datos['project'].str.contains("-000193-", case=True)]
 	datos_ext = datos_ext[datos_ext['project'].str.contains("-000193-", case=True)]
 	
-	#engine = sqlalchemy.create_engine('mysql+pymysql://root:password@localhost/world')
-	engine = sqlalchemy.create_engine('mysql+pymysql://root:everis@localhost:3307/black_margin')
+	config = configparser.ConfigParser()
+	config.read("configuracion.ini")
+	
+	usuario = input(u"Introducir usario de conexion con el servidor: ")
+
+	usuario = usuario.upper()
+	password = config[usuario]["password"]
+	user = config[usuario]["user"]
+	host = config[usuario]["host"]
+	dataBase = config[usuario]["dataBase"]
+
+	print(password)
+
+	engine = sqlalchemy.create_engine('mysql+pymysql://'+user+':'+password+'@'+host+'/'+dataBase)
+	#engine = sqlalchemy.create_engine('mysql+pymysql://root:@localhost/margin')
 
 	datos.to_sql("empleado_csr", engine, if_exists = "append", index = False)
 	datos_ext.to_sql("empleado_csr", engine, if_exists = "append", index = False)
 
-	conn=engine.connect()
-	res=conn.execute('select * from empleado_csr')
-	df=pd.DataFrame(res.fetchall())
+	conn = engine.connect()
+	res = conn.execute('select * from empleado_csr')
+	df = pd.DataFrame(res.fetchall())
 	conn.close()
 		
-	columnas= list(df.columns)
+	columnas = list(df.columns)
 	for k in range(len(columnas)):
 		df = df.rename(columns={columnas[k]:str(datos.columns[k])})
 		
 	df2 = df.drop_duplicates()
-
 	df2.to_sql("empleado_csr", engine, if_exists = "replace", index = False)
 
 	engine.execute("SET @@global.max_allowed_packet = 8388608;")
@@ -69,12 +82,12 @@ if (len(b)==6):
 		if not row:
 			engine.execute('ALTER TABLE margin.empleados_csr CHANGE COLUMN month month BIGINT(20) NOT NULL, CHANGE COLUMN expense_month_(adjusted) expense_month_(adjusted) BIGINT(20) NOT NULL, CHANGE COLUMN project project VARCHAR(45) NOT NULL, CHANGE COLUMN id_employee id_employee BIGINT(20) NOT NULL, ADD PRIMARY KEY (month,expense_month_(adjusted), project, id_employee);') 
 
-	conn1=engine.connect()
-	res1=conn1.execute('select * from empleado_csr')
-	acumulado=pd.DataFrame(res1.fetchall())
+	conn1 = engine.connect()
+	res1 = conn1.execute('select * from empleado_csr')
+	acumulado = pd.DataFrame(res1.fetchall())
 	conn1.close()
 		
-	columnas= list(acumulado.columns)
+	columnas = list(acumulado.columns)
 	for k in range(len(columnas)):
 		acumulado = acumulado.rename(columns={columnas[k]:str(datos.columns[k])})
 
