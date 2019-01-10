@@ -4,10 +4,9 @@ import sqlalchemy
 import sys 
 from pandas import ExcelWriter
 import configparser
-	
 while True:
 	try:
-		a = int(input(u"Introducir una fecha en formato año y mes(aaaamm): "))
+		a = int(sys.argv[2])
 		break
 	except ValueError:
 		print (u"Lo sentimos. La fecha introducida no cumple el formato. Intentelo de nuevo :")
@@ -30,98 +29,50 @@ if (len(b)==6):
 	config = configparser.ConfigParser()
 	config.read("configuracion.ini")
 	
-	usuario = input(u"Introducir usario de conexion con el servidor: ")
+	usuario = sys.argv[1]
 
 	usuario = usuario.upper()
 	password = config[usuario]["password"]
 	user = config[usuario]["user"]
 	host = config[usuario]["host"]
 	dataBase = config[usuario]["dataBase"]
-	
-	engine = sqlalchemy.create_engine('mysql+pymysql://'+user+':'+password+'@'+host+'/'+dataBase)
-	#engine = sqlalchemy.create_engine('mysql+pymysql://root:password@localhost/world')
-	datos.to_sql("tls", engine,if_exists = "append", index = False)
-	
-	conn = engine.connect()
-	res = conn.execute('select * from tls')
-	df = pd.DataFrame(res.fetchall())
-	conn.close()
-	
-	columnas = list(df.columns)
-	for k in range(len(columnas)):
-		df = df.rename(columns={columnas[k]:str(datos.columns[k])})
-	
-	primero = 0
-	lista = list(df['month'])
-	for i in range(len(lista)):
-		if lista[i] != a:
-			if primero == 0:
-				df[i:i+1].to_sql("tls", engine, if_exists= "replace",index=False)
-				primero=1
-			elif (i == len(lista)-1):
-				df[i:].to_sql("tls", engine, if_exists= "append",index=False)
-			else: 
-				df[i:i+1].to_sql("tls", engine, if_exists= "append",index=False)	
 
-	if primero == 0:
-		datos.to_sql("tls", engine,if_exists = "replace", index = False)
+	engine = sqlalchemy.create_engine('mysql+pymysql://'+user+':'+password+'@'+host+'/'+dataBase)
+	#engine = sqlalchemy.create_engine('mysql+pymysql://root:@localhost/margin')
+	
+	exist = False
+	existe = engine.execute("show tables like 'tls'");
+	for row in existe:
+		conn = engine.connect()
+		res = conn.execute('select * from tls')
+		df = pd.DataFrame(res.fetchall())
+		conn.close()
+		exist = True
+
+	if not exist: #Creo la tabla la primera vez
+		df = datos
+		df.to_sql("tls", engine, if_exists = "append", index = False)
 	else:
-		datos.to_sql("tls", engine,if_exists = "append", index = False)
-	
-	conn1 = engine.connect()
-	res1 = conn1.execute('select * from tls')
-	df1 = pd.DataFrame(res1.fetchall())
-	conn1.close()
-	
-	columnas1 = list(df1.columns)
-	for k in range(len(columnas1)):
-		df1 = df1.rename(columns={columnas1[k]:str(datos.columns[k])})
-		
-	df2 = df1.sort_values(by='month', ascending=True)
-	df2.to_sql("tls", engine, if_exists = "replace", index = False)
+		columnas = list(df.columns)
+		for k in range(len(columnas)):
+			df = df.rename(columns={columnas[k]:str(datos.columns[k])})
+
+		if a in list(df.month): #Si tengo que actualizar la tabla con datos que SI estan en la base
+			df = df.drop(df[df['month'] == a].index)
+
+		df = pd.concat([df,datos])
+		df = df.sort_values(by='month', ascending=True)
+		df.to_sql("tls", engine, if_exists = "replace", index = False)
+
 	
 	existe = engine.execute("show tables like 'tls'");
 	for row in existe:
-		if not row:
-			engine.execute('ALTER TABLE margin.tls CHANGE COLUMN project project VARCHAR(45) NOT NULL ,CHANGE COLUMN persona persona VARCHAR(45) NOT NULL, CHANGE COLUMN month month BIGINT(20) NOT NULL, ADD PRIMARY KEY (project, persona, month);') 
-	
-	conn1 = engine.connect()
-	res1 = conn1.execute('select * from tls')
-	acumulado = pd.DataFrame(res1.fetchall())
-	conn1.close()
-	
-	columnas = list(acumulado.columns)
-	for k in range(len(columnas)):
-		acumulado = acumulado.rename(columns={columnas[k]:str(datos.columns[k])})
+		engine.execute('ALTER TABLE '+dataBase+'.tls CHANGE COLUMN project project VARCHAR(45) NOT NULL ,CHANGE COLUMN id_employee id_employee BIGINT(20) NOT NULL, CHANGE COLUMN month month BIGINT(20) NOT NULL, ADD PRIMARY KEY (month, project, id_employee);') 
 		
-	aux = acumulado
-	writer = pd.ExcelWriter('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/historicos_black_margin/tls_acumulado.xlsx', engine='xlsxwriter')
-	acumulado.to_excel(writer, index=False)
-	writer.save()
-	
-	#actualizamos la tabla de descripción de personas
-	#datos_pers = pd.read_excel("normbre_excel.xlsx")
-	#datos_pers.to_sql("des_persona", engine,if_exists = "replace", index = False)
-	
-	#writer1 = pd.ExcelWriter('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/historicos_black_margin/des_persona.xlsx', engine='xlsxwriter')
-	#datos_pers.to_excel(writer1, index=False)
-	#writer1.save()
-	
-	#columnasBuenas = ["id_employee", "persona"]				 
-	#columnasTotal =list(aux.columns)
-	#for e in columnasBuenas:
-		#columnasTotal.remove(e)
-		
-	#aux = aux.drop(columnasTotal, axis=1)
-	#aux1=aux.sort_values(by='id_employee')
-	
-	#aux2 =aux1.drop_duplicates(subset='id_employee',keep='last')
-	
-	#aux2.to_sql("des_persona", engine, if_exists = "replace", index= False)
-	
-	#writer1 = pd.ExcelWriter('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/historicos_black_margin/des_persona.xlsx', engine='xlsxwriter')
-	#aux2.to_excel(writer1, index=False)
-	#writer1.save()
+	if usuario=='SERVIDOR':
+		writer = pd.ExcelWriter('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/historicos_black_margin/tls_acumulado.xlsx', engine='xlsxwriter')
+		df.to_excel(writer, index=False)
+		writer.save()
 
 else:
 	print('La fecha introducida no es válida. Intentelo de nuevo')

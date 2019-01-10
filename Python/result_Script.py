@@ -7,7 +7,7 @@ import configparser
 
 while True:
 	try:
-		a = int(input(u"Introducir una fecha en formato año y mes(aaaamm): "))
+		a = int(sys.argv[2])
 		break
 	except ValueError:
 		print (u"Lo sentimos. La fecha introducida no cumple el formato. Intentelo de nuevo :")
@@ -37,7 +37,7 @@ if (len(b)==6):
 	config = configparser.ConfigParser()
 	config.read("configuracion.ini")
 	
-	usuario = input(u"Introducir usario de conexion con el servidor: ")
+	usuario = sys.argv[1]
 
 	usuario = usuario.upper()
 	password = config[usuario]["password"]
@@ -45,59 +45,38 @@ if (len(b)==6):
 	host = config[usuario]["host"]
 	dataBase = config[usuario]["dataBase"]
 
-	print(password)
-
 	engine = sqlalchemy.create_engine('mysql+pymysql://'+user+':'+password+'@'+host+'/'+dataBase)
 	#engine = sqlalchemy.create_engine('mysql+pymysql://root:@localhost/margin')
 	
-	datos.to_sql("result", engine, if_exists = "append", index = False)
-	
-	conn=engine.connect()
-	res=conn.execute('select * from result')
-	df=pd.DataFrame(res.fetchall())
-	conn.close()
-	
-	columnas= list(df.columns)
-	for k in range(len(columnas)):
-		df = df.rename(columns={columnas[k]:str(datos.columns[k])})
-	
-	primero = 0
-	lista=list(df['month'])
-	for i in range(len(lista)):
-		if lista[i] != a:
-			if primero == 0:
-				
-				df[i:i+1].to_sql("result", engine, if_exists = "replace",index=False)
-				primero=1
-			elif (i==len(lista)-1):
-				df[i:].to_sql("result", engine, if_exists= "append",index=False)
-			else: 
-				df[i:i+1].to_sql("result", engine, if_exists= "append",index=False)	
+	exist = False
+	existe = engine.execute("show tables like 'result'");
+	for row in existe:
+		conn = engine.connect()
+		res = conn.execute('select * from result')
+		df = pd.DataFrame(res.fetchall())
+		conn.close()
+		exist = True
 
-	if primero==0:
-		datos.to_sql("result", engine,if_exists = "replace", index = False)
-
+	if not exist: #Creo la tabla la primera vez
+		df = datos
+		df.to_sql("result", engine, if_exists = "append", index = False)
 	else:
-		datos.to_sql("result", engine,if_exists = "append", index = False)
-		
-	conn1=engine.connect()
-	res1=conn1.execute('select * from result')
-	df1=pd.DataFrame(res1.fetchall())
-	conn1.close()
-	
-	columnas1= list(df1.columns)
-	for k in range(len(columnas1)):
-		df1 = df1.rename(columns={columnas1[k]:str(datos.columns[k])})
-		
-	df2=df1.sort_values(by='month', ascending=True)
+		columnas = list(df.columns)
+		for k in range(len(columnas)):
+			df = df.rename(columns={columnas[k]:str(datos.columns[k])})
 
-	df2.to_sql("result", engine, if_exists = "replace", index = False)
+		if a in list(df.month): #Si tengo que actualizar la tabla con datos que SI estan en la base
+			df = df.drop(df[df['month'] == a].index)
+
+		df1 = pd.concat([df,datos])
+		df2 = df1.sort_values(by='month', ascending=True)
+		df2.to_sql("result", engine, if_exists = "replace", index = False)
+
 	
 	engine.execute("SET @@global.max_allowed_packet = 8388608;")
 	existe = engine.execute("show tables like 'result'");
 	for row in existe:
-		if not row:
-			engine.execute('ALTER TABLE margin.result CHANGE COLUMN month month VARCHAR(45) NOT NULL, CHANGE COLUMN project project VARCHAR(45) NOT NULL, ADD PRIMARY KEY (month, project);') 
+		engine.execute('ALTER TABLE ' +dataBase+'.result CHANGE COLUMN month month BIGINT(20) NOT NULL, CHANGE COLUMN project project VARCHAR(45) NOT NULL, ADD PRIMARY KEY (month, project);') 
 	
 	conn1=engine.connect()
 	res1=conn1.execute('select * from result')
@@ -108,13 +87,9 @@ if (len(b)==6):
 	for k in range(len(columnas)):
 		acumulado = acumulado.rename(columns={columnas[k]:str(datos.columns[k])})
 		
-	
-	#writer = pd.ExcelWriter('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/historicos_black_margin/result_acumulado.xlsx', engine='xlsxwriter')
-	
-		
-	
-	#sacumulado.to_excel(writer, index=False)
-
-	#writer.save()
+	if usuario == "SERVIDOR":
+		writer = pd.ExcelWriter('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/historicos_black_margin/result_acumulado.xlsx', engine='xlsxwriter')
+		sacumulado.to_excel(writer, index=False)
+		writer.save()
 else:
 	print("La fecha introducida no es válida. Intentelo de nuevo")

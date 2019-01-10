@@ -7,7 +7,7 @@ import configparser
 
 while True:
 	try:
-		a = int(input(u"Introducir una fecha en formato año y mes(aaaamm): "))
+		a = int(sys.argv[2])
 		break
 	except ValueError:
 		print (u"Lo sentimos. La fecha introducida no cumple el formato. Intentelo de nuevo :")
@@ -45,55 +45,54 @@ if (len(b)==6):
 	datos = datos[datos['project'].str.contains("-000193-", case=True)]
 	datos_ext = datos_ext[datos_ext['project'].str.contains("-000193-", case=True)]
 	
+	datos = pd.concat([datos,datos_ext])
+	datos = datos.drop_duplicates()
+	
 	config = configparser.ConfigParser()
 	config.read("configuracion.ini")
 	
-	usuario = input(u"Introducir usario de conexion con el servidor: ")
-
+	usuario = sys.argv[1]
 	usuario = usuario.upper()
 	password = config[usuario]["password"]
 	user = config[usuario]["user"]
 	host = config[usuario]["host"]
 	dataBase = config[usuario]["dataBase"]
 
-	print(password)
-
 	engine = sqlalchemy.create_engine('mysql+pymysql://'+user+':'+password+'@'+host+'/'+dataBase)
 	#engine = sqlalchemy.create_engine('mysql+pymysql://root:@localhost/margin')
-
-	datos.to_sql("empleado_csr", engine, if_exists = "append", index = False)
-	datos_ext.to_sql("empleado_csr", engine, if_exists = "append", index = False)
-
-	conn = engine.connect()
-	res = conn.execute('select * from empleado_csr')
-	df = pd.DataFrame(res.fetchall())
-	conn.close()
-		
-	columnas = list(df.columns)
-	for k in range(len(columnas)):
-		df = df.rename(columns={columnas[k]:str(datos.columns[k])})
-		
-	df2 = df.drop_duplicates()
-	df2.to_sql("empleado_csr", engine, if_exists = "replace", index = False)
-
-	engine.execute("SET @@global.max_allowed_packet = 8388608;")
-	existe = engine.execute("show tables like 'empleados_csr'");
+	
+	exist = False
+	existe = engine.execute("show tables like 'empleado_csr'");
 	for row in existe:
-		if not row:
-			engine.execute('ALTER TABLE margin.empleados_csr CHANGE COLUMN month month BIGINT(20) NOT NULL, CHANGE COLUMN expense_month_(adjusted) expense_month_(adjusted) BIGINT(20) NOT NULL, CHANGE COLUMN project project VARCHAR(45) NOT NULL, CHANGE COLUMN id_employee id_employee BIGINT(20) NOT NULL, ADD PRIMARY KEY (month,expense_month_(adjusted), project, id_employee);') 
-
-	conn1 = engine.connect()
-	res1 = conn1.execute('select * from empleado_csr')
-	acumulado = pd.DataFrame(res1.fetchall())
-	conn1.close()
+		conn = engine.connect()
+		res = conn.execute('select * from empleado_csr')
+		df = pd.DataFrame(res.fetchall())
+		conn.close()
+		exist = True
 		
-	columnas = list(acumulado.columns)
-	for k in range(len(columnas)):
-		acumulado = acumulado.rename(columns={columnas[k]:str(datos.columns[k])})
+	if not exist: #Creo la tabla la primera vez
+		df = datos
+		df.to_sql("empleado_csr", engine, if_exists = "append", index = False)
+	else:
+		columnas = list(df.columns)
+		for k in range(len(columnas)):
+			df = df.rename(columns={columnas[k]:str(datos.columns[k])})
 
-	writer = pd.ExcelWriter('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/historicos_black_margin/empleados_csr_acumulado.xlsx', engine='xlsxwriter')
-	acumulado.to_excel(writer, index=False)
-	writer.save()
+		if a in list(df.month): #Si tengo que actualizar la tabla con datos que SI estan en la base
+			df = df.drop(df[df['month'] == a].index)
+
+		df = pd.concat([df,datos])
+		df = df.sort_values(by='month', ascending=True)
+		df.to_sql("empleado_csr", engine, if_exists = "replace", index = False)
+	
+	existe = engine.execute("show tables like 'empleado_csr'");
+	for row in existe:
+		engine.execute('ALTER TABLE '+dataBase+'.empleado_csr CHANGE COLUMN month month BIGINT(20) NOT NULL, CHANGE COLUMN expense_month_adjusted expense_month_adjusted BIGINT(20) NOT NULL, CHANGE COLUMN project project VARCHAR(45) NOT NULL, CHANGE COLUMN id_employee id_employee BIGINT(20) NOT NULL, ADD PRIMARY KEY (month, expense_month_adjusted, project, id_employee);') 
+
+	if usuario=='SERVIDOR':
+		writer = pd.ExcelWriter('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/historicos_black_margin/empleado_csr_acumulado.xlsx', engine='xlsxwriter')
+		df.to_excel(writer, index=False)
+		writer.save()
 	
 else:
 	print('La fecha introducida no es válida. Intentelo de nuevo')
