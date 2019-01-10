@@ -89,7 +89,7 @@ if (len(b)==6):
 		
 	if usuario == "SERVIDOR":
 		writer = pd.ExcelWriter('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/historicos_black_margin/result_acumulado.xlsx', engine='xlsxwriter')
-		sacumulado.to_excel(writer, index=False)
+		acumulado.to_excel(writer, index=False)
 		writer.save()
 else:
 	print("La fecha introducida no es válida. Intentelo de nuevo")
