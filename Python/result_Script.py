@@ -4,6 +4,7 @@ import sqlalchemy
 import sys
 from pandas import ExcelWriter
 import configparser
+from datetime import datetime
 
 while True:
 	try:
@@ -31,7 +32,7 @@ if (len(b)==6):
 
 	datos = datos.drop(columnasTotal, axis=1)
 	datos = datos.fillna(0.0)
-	
+	datos['auditoria']=pd.Series([datetime.now() for x in range(len(datos.index))])
 	datos = datos[datos['project'].str.contains("-000193-", case=True)]
 
 	config = configparser.ConfigParser()

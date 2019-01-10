@@ -4,6 +4,7 @@ import sqlalchemy
 import sys 
 from pandas import ExcelWriter
 import configparser
+from datetime import datetime
 	
 datos = pd.read_excel("Organigrama Proyectos Informacional BBVA.xlsx")
 
@@ -30,6 +31,7 @@ for i in range(len(datos.id_employee)):
 datos.fecha_incorporacion = list(map(lambda x: cambiarNAN_fecha(x), datos.fecha_incorporacion))
 datos.fecha_baja = list(map(lambda x: cambiarNAN_fecha(x), datos.fecha_baja))
 datos = datos.fillna(int(0))
+datos['auditoria']=pd.Series([datetime.now() for x in range(len(datos.index))])
 
 config = configparser.ConfigParser()
 config.read("configuracion.ini")

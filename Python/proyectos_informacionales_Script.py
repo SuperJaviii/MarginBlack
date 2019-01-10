@@ -4,11 +4,12 @@ import sqlalchemy
 import sys
 from pandas import ExcelWriter
 import configparser
+from datetime import datetime
 
 datos = pd.read_excel("Proyectos Informacionales.xlsx").fillna(" ")
 datos.columns = list(map(lambda x: x.lower().replace(" ", "_").replace("-","_").replace("+","plus").replace("(","").replace(")","")
 .replace("á","a").replace("é","e").replace("í","i").replace("ó","o").replace("ú","u"), datos.columns))
-
+datos['auditoria']=pd.Series([datetime.now() for x in range(len(datos.index))])
 
 config = configparser.ConfigParser()
 config.read("configuracion.ini")

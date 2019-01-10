@@ -4,6 +4,7 @@ import sqlalchemy
 import sys 
 from pandas import ExcelWriter
 import configparser
+from datetime import datetime
 while True:
 	try:
 		a = int(sys.argv[2])
@@ -25,7 +26,8 @@ if (len(b)==6):
 	
 	datos.horas_estabilizacion = list(map(lambda x: cambiarNAN(x), datos.horas_estabilizacion))
 	datos = datos.fillna(b)
-
+	datos['auditoria']=pd.Series([datetime.now() for x in range(len(datos.index))])
+	
 	config = configparser.ConfigParser()
 	config.read("configuracion.ini")
 	
