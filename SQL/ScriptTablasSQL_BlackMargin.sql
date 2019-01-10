@@ -1,5 +1,5 @@
-#CREATE DATABASE black_margin;
-#USE black_margin;
+CREATE DATABASE black_margin;
+USE black_margin;
 
 #**************************************************************************************************************
 
@@ -13,6 +13,7 @@ CREATE TABLE `tls` (
   `horas_estabilizacion` bigint(20) DEFAULT NULL,
   `id_employee` integer(20) NOT NULL,
   `month` integer(6) NOT NULL,
+  `auditoria` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id_employee, project, `month`)  
   );
 	CREATE INDEX idx_nombre_persona ON tls (persona);
@@ -26,6 +27,7 @@ CREATE TABLE `empleado_csr` (
   `project` varchar(20) NOT NULL,
   `id_employee` integer NOT NULL,
   `hours` integer DEFAULT NULL,
+  `auditoria` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id_employee, project, `month`)  
  );
 	CREATE INDEX idx_employee_category ON empleado_csr (employee_category);
@@ -49,7 +51,9 @@ CREATE TABLE `des_persona` (
   `descripcion_2` 	varchar(40) DEFAULT NULL,
   `area` 			varchar(20) DEFAULT NULL,
   `tecnologia` 		varchar(20) DEFAULT NULL,
-  PRIMARY KEY (id_employee));
+  `subcontrating` 	integer(1) DEFAULT NULL,
+  `auditoria` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id_employee,rol, project));
 	CREATE INDEX idx_fecha_baja ON des_persona (fecha_baja);
   
   
@@ -70,6 +74,7 @@ CREATE TABLE `des_persona` (
   `contract_margin_gap_porcentaje` double DEFAULT NULL,
   `commercial_margin_gap` double DEFAULT NULL,
   `commercial_margin_gap_porcentaje` float DEFAULT NULL,
+  `auditoria` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (project, `month`));
 	CREATE INDEX idx_project ON result (project);
     
@@ -80,6 +85,7 @@ CREATE TABLE `des_persona` (
   `descripcion` varchar(40) DEFAULT NULL,
   `descripcion_2` varchar(40) DEFAULT NULL,
   `area` varchar(20) DEFAULT NULL,
+  `auditoria` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (project));
 	CREATE INDEX idx_area ON proyectos_informacionales (area);
 
@@ -90,5 +96,6 @@ CREATE TABLE `des_persona` (
   `year` year NOT NULL,
   `Q` varchar(4) DEFAULT NULL,
   `fiscal_year` year DEFAULT NULL,
+  `auditoria` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`month`,`year`));
 	CREATE INDEX idx_trismestre ON trimestres (Q);
