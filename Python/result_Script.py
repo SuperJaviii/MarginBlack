@@ -20,12 +20,13 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <= int(yea
 	if path.exists(b + "_Result TH.xlsx"):
 		datos = pd.read_excel(b + "_Result TH.xlsx")
 		datos.columns = list(map(lambda x: x.lower().replace(" ", "_").replace("-","_").replace("+","plus").replace("(", "").replace(")", "")
-							.replace("á","a").replace("é","e").replace("í","i").replace("ó","o").replace("ú","u"), datos.columns))
+							.replace("%","porcentaje").replace("á","a").replace("é","e").replace("í","i").replace("ó","o").replace("ú","u"), datos.columns))
 
 		 
 		columnasBuenas = ["month", "project", "sector", "un", "external_subcontrating_revenue",
 						 "external_subcontrating_cost", "net_revenue", "total_expenses_plus_csr",
-						 "service_rendered_revenue", "other_expenses_cost", "service_rendered_cost"]
+						 "service_rendered_revenue", "other_expenses_cost", "service_rendered_cost",
+						 "commercial_margin_gap", "commercial_margin_gap_porcentaje", "contract_margin_gap", "contract_margin_gap_porcentaje"]
 						 
 		columnasTotal =list(datos.columns)
 
