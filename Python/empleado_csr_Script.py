@@ -53,7 +53,7 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <= int(yea
 		datos_ext = datos_ext[datos_ext['project'].str.contains("-000193-", case=True)]
 		
 		datos = pd.concat([datos,datos_ext])
-		datos = datos.drop_duplicates(subset=["month", "expense_month_adjusted", "project", "id_employee"], keep=False)
+		datos = datos.drop_duplicates(subset=["month", "expense_month_adjusted", "project", "id_employee"], keep="last")
 		
 		config = configparser.ConfigParser()
 		config.read("configuracion.ini")

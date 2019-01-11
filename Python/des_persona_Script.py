@@ -58,13 +58,15 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <=  int(ye
 		#engine = sqlalchemy.create_engine('mysql+pymysql://root:@localhost/margin')
 
 		datos['subcontrating']=pd.Series([0 for x in range(len(datos.index))])
+		print(len(datos.employee_category))
 		for i in range(len(datos.employee_category)):
-			if str(datos.employee_category[i])=='SUBCONTR':
+			if str(datos.employee_category[i]) == str('SUBCONTR'):
 				datos.subcontrating[i]=1
 
 		datos['auditoria']=pd.Series([datetime.now() for x in range(len(datos.index))])
 		datos['month']=pd.Series([a for x in range(len(datos.index))])
-				
+		datos = datos.drop_duplicates(subset=["month", "id_employee", "project"], keep="last")
+		
 		exist = False
 		existe = engine.execute("show tables like 'des_persona'");
 		for row in existe:
@@ -91,7 +93,7 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <=  int(ye
 			
 		existe = engine.execute("show tables like 'des_persona'")
 		for row in existe:
-			engine.execute('ALTER TABLE '+dataBase+'.des_persona CHANGE COLUMN month month BIGINT(20) NOT NULL, CHANGE COLUMN project project VARCHAR(45) NOT NULL ,CHANGE COLUMN id_employee id_employee BIGINT(20) NOT NULL ,CHANGE COLUMN rol rol VARCHAR(45) NOT NULL, ADD PRIMARY KEY (month, project, id_employee,rol);') 		
+			engine.execute('ALTER TABLE '+dataBase+'.des_persona CHANGE COLUMN month month BIGINT(20) NOT NULL, CHANGE COLUMN project project VARCHAR(45) NOT NULL ,CHANGE COLUMN id_employee id_employee BIGINT(20) NOT NULL, ADD PRIMARY KEY (month, project, id_employee);') 		
 
 	else:
 		print("El archivo que intenta consultar no existe")
