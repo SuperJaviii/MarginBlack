@@ -36,7 +36,7 @@ if path.exists("Proyectos Informacionales.xlsx"):
 		conn.close()
 		exist = True
 
-	if not exist: #Creo la tabla la primera vez
+	if not exist or len(df) == 0: #Creo la tabla la primera vez
 		df = datos
 		df.to_sql("proyectos_informacionales", engine, if_exists = "replace", index = False)
 	else:

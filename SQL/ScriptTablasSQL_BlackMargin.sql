@@ -8,7 +8,7 @@ USE black_margin;
 #Esta tabla se usa para ver el nº de empleados en cada mes en proyectos BBVA y las horas cargadas en OneERP
 CREATE TABLE `tls` (
   `project` varchar(20) NOT NULL,
-  `proyecto` varchar(20) DEFAULT NULL,
+  `proyecto` varchar(60) DEFAULT NULL,
   `persona` varchar(200) DEFAULT NULL,
   `horas_estabilizacion` bigint(20) DEFAULT NULL,
   `id_employee` integer(20) NOT NULL,
@@ -22,13 +22,13 @@ CREATE TABLE `tls` (
 #Se crea la tabla de horas de cierre por empleado, proyecto y fecha  
 CREATE TABLE `empleado_csr` (
   `month` integer(6) NOT NULL,
-  `expense_month_adjusted` integer(6) DEFAULT NULL,
+  `expense_month_adjusted` integer(6) NOT NULL,
   `employee_category` varchar(20) DEFAULT NULL,
   `project` varchar(20) NOT NULL,
   `id_employee` integer NOT NULL,
   `hours` integer DEFAULT NULL,
   `auditoria` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (id_employee, project, `month`)  
+  PRIMARY KEY (`month`,id_employee, expense_month_adjusted, project)  
  );
 	CREATE INDEX idx_employee_category ON empleado_csr (employee_category);
    
@@ -44,16 +44,17 @@ CREATE TABLE `des_persona` (
   `unidad_de_negocio` varchar(40) DEFAULT NULL,
   `fecha_incorporacion` date DEFAULT NULL,
   `fecha_baja` 		date DEFAULT NULL,
-  `tarifa_` 		float DEFAULT NULL,
+  `tarifa_` 		varchar(10) DEFAULT NULL,
   `csr` 			double DEFAULT NULL,
   `porcentaje_cm` 	float DEFAULT NULL,
   `project` 		varchar(20) DEFAULT NULL,
-  `descripcion_2` 	varchar(40) DEFAULT NULL,
-  `area` 			varchar(20) DEFAULT NULL,
-  `tecnologia` 		varchar(20) DEFAULT NULL,
+  `descripcion_2` 	varchar(100) DEFAULT NULL,
+  `area` 			varchar(40) DEFAULT NULL,
+  `tecnologia` 		varchar(40) DEFAULT NULL,
   `subcontrating` 	integer(1) DEFAULT NULL,
+  `month`			integer(6) NOT NULL,
   `auditoria` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (id_employee,rol, project));
+  PRIMARY KEY (id_employee,`month`, project));
 	CREATE INDEX idx_fecha_baja ON des_persona (fecha_baja);
   
   

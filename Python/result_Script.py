@@ -62,7 +62,7 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <= int(yea
 			conn.close()
 			exist = True
 
-		if not exist: #Creo la tabla la primera vez
+		if not exist or len(df) == 0: #Creo la tabla la primera vez
 			df = datos
 			df.to_sql("result", engine, if_exists = "append", index = False)
 		else:
@@ -81,7 +81,7 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <= int(yea
 		engine.execute("SET @@global.max_allowed_packet = 8388608;")
 		existe = engine.execute("show tables like 'result'");
 		for row in existe:
-			engine.execute('ALTER TABLE ' +dataBase+'.result CHANGE COLUMN month month BIGINT(20) NOT NULL, CHANGE COLUMN project project VARCHAR(45) NOT NULL, ADD PRIMARY KEY (month, project);') 
+			engine.execute('ALTER TABLE ' +dataBase+'.result CHANGE COLUMN month month integer(6) NOT NULL, CHANGE COLUMN project project VARCHAR(20) NOT NULL, ADD PRIMARY KEY (month, project);') 
 		
 		conn1=engine.connect()
 		res1=conn1.execute('select * from result')

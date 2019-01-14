@@ -76,7 +76,7 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <=  int(ye
 			conn.close()
 			exist = True
 
-		if not exist: #Creo la tabla la primera vez
+		if not exist or len(df) == 0: #Creo la tabla la primera vez
 			df = datos
 			df.to_sql("des_persona", engine, if_exists = "append", index = False)
 		else:
