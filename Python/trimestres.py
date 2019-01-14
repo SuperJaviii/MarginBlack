@@ -54,7 +54,7 @@ if path.exists("trimestres.xlsx"):
 	for k in range(len(columnas)):
 		acumulado = acumulado.rename(columns={columnas[k]:str(datos.columns[k])})
 	if usuario=='SERVIDOR':		
-		writer = pd.ExcelWriter('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/historicos_black_margin/proyectos_informacionales_acumulado.xlsx', engine='xlsxwriter')		
+		writer = pd.ExcelWriter('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/historicos_black_margin/trimestres.xlsx', engine='xlsxwriter')		
 		acumulado.to_excel(writer, index=False)
 		writer.save()
 

@@ -47,12 +47,12 @@ CREATE TABLE `des_persona` (
   `tarifa_` 		varchar(10) DEFAULT NULL,
   `csr` 			double DEFAULT NULL,
   `porcentaje_cm` 	float DEFAULT NULL,
-  `project` 		varchar(20) DEFAULT NULL,
+  `project` 		varchar(20) NOT NULL,
   `descripcion_2` 	varchar(100) DEFAULT NULL,
   `area` 			varchar(40) DEFAULT NULL,
   `tecnologia` 		varchar(40) DEFAULT NULL,
-  `subcontrating` 	integer(1) DEFAULT NULL,
   `month`			integer(6) NOT NULL,
+  `subcontrating` 	integer(1) DEFAULT NULL,
   `auditoria` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id_employee,`month`, project));
 	CREATE INDEX idx_fecha_baja ON des_persona (fecha_baja);
