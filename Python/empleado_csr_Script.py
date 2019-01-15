@@ -53,8 +53,23 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <= int(yea
 		datos_ext = datos_ext[datos_ext['project'].str.contains("-000193-", case=True)]
 		
 		datos = pd.concat([datos,datos_ext])
-		datos = datos.drop_duplicates(subset=["month", "expense_month_adjusted", "project", "id_employee"], keep="last")
+		datos1=datos
 		
+		duplicados=list(datos.duplicated(subset=["month", "expense_month_adjusted", "project", "id_employee"], keep='first'))
+		j = 0
+		for i in datos.index:
+			if duplicados[j]==False:
+				datos1=datos1.drop(datos1[datos1.index == i].index)
+			else:
+				if not duplic:
+					print('Existen registros duplicados, podra encontrar los duplicados en duplicados_empleados.xlsx, revise la carga')
+					duplic=True
+			j+=1
+				
+		datos1.to_excel('duplicados_empleados.xlsx',index=False)
+		
+		datos = datos.drop_duplicates(subset=["month", "expense_month_adjusted", "project", "id_employee"], keep="first")
+	
 		config = configparser.ConfigParser()
 		config.read("configuracion.ini")
 		

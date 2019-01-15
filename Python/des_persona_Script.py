@@ -44,6 +44,22 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <=  int(ye
 		datos.fecha_baja = list(map(lambda x: cambiarNAN_fecha(x), datos.fecha_baja))
 		datos = datos.fillna(int(0))
 
+		datos1=datos
+		
+		duplicados=list(datos.duplicated(subset=["month", "id_employee", "project"], keep='first'))
+		
+		j = 0
+		for i in datos.index:
+			if duplicados[j]==False:
+				datos1=datos1.drop(datos1[datos1.index == i].index)
+			else:
+				if not duplic:
+					print('Existen registros duplicados, podra encontrar los duplicados en duplicados_des_persona.xlsx, revise la carga')
+					duplic=True
+			j+=1
+				
+		datos1.to_excel('duplicados_des_persona.xlsx',index=False)
+		
 		config = configparser.ConfigParser()
 		config.read("configuracion.ini")
 		usuario = sys.argv[1]
@@ -65,7 +81,7 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <=  int(ye
 
 		datos['auditoria']=pd.Series([datetime.now() for x in range(len(datos.index))])
 		datos['month']=pd.Series([a for x in range(len(datos.index))])
-		datos = datos.drop_duplicates(subset=["month", "id_employee", "project"], keep="last")
+		datos = datos.drop_duplicates(subset=["month", "id_employee", "project"], keep="first")
 		
 		exist = False
 		existe = engine.execute("show tables like 'des_persona'");

@@ -39,6 +39,24 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <= int(yea
 		datos['auditoria']=pd.Series([datetime.now() for x in range(len(datos.index))])
 		datos = datos[datos['project'].str.contains("-000193-", case=True)]
 
+		datos1=datos
+		
+		duplicados=list(datos.duplicated(subset=['month','project'], keep='first'))
+		j = 0
+		duplic=False
+		for i in datos.index:
+			if duplicados[j]==False:
+				datos1=datos1.drop(datos1[datos1.index == i].index)
+			else:
+				if not duplic:
+					print('Existen registros duplicados, podra encontrar los duplicados en duplicados_result.xlsx, revise la carga')
+					duplic=True
+			j+=1
+				
+		datos1.to_excel('duplicados_result.xlsx',index=False)
+		datos = datos.drop_duplicates(subset=['month','project'], keep="first")	
+		
+		
 		config = configparser.ConfigParser()
 		config.read("configuracion.ini")
 		
