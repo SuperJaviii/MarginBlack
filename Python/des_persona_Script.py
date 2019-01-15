@@ -49,6 +49,7 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <=  int(ye
 		duplicados=list(datos.duplicated(subset=["month", "id_employee", "project"], keep='first'))
 		
 		j = 0
+		duplic= False
 		for i in datos.index:
 			if duplicados[j]==False:
 				datos1=datos1.drop(datos1[datos1.index == i].index)

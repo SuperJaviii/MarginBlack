@@ -17,6 +17,7 @@ if path.exists("Proyectos Informacionales.xlsx"):
 	duplicados=list(datos.duplicated(subset=["project"], keep='first'))
 		
 	j = 0
+	duplic = False
 	for i in datos.index:
 		if duplicados[j]==False:
 			datos1=datos1.drop(datos1[datos1.index == i].index)
