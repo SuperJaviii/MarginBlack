@@ -1,5 +1,4 @@
 import pandas as pd
-import pymysql
 import sqlalchemy
 import sys 
 from pandas import ExcelWriter
@@ -12,7 +11,8 @@ while True:
 		a = int(sys.argv[2])
 		break
 	except ValueError:
-		print (u"Lo sentimos. La fecha introducida no cumple el formato. Intentelo de nuevo :")
+		print (u"Lo sentimos. La fecha introducida no cumple el formato. Intentelo de nuevo")
+		exit()
 
 year = str(datetime.now())[:4]
 b=str(a)
@@ -89,11 +89,8 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <=  int(ye
 
 			df = pd.concat([df,datos])
 			df = df.sort_values(by='month', ascending=True)
-			df.to_sql("des_persona", engine, if_exists = "replace", index = False)
-			
-		existe = engine.execute("show tables like 'des_persona'")
-		for row in existe:
-			engine.execute('ALTER TABLE '+dataBase+'.des_persona CHANGE COLUMN month month BIGINT(20) NOT NULL, CHANGE COLUMN project project VARCHAR(45) NOT NULL ,CHANGE COLUMN id_employee id_employee BIGINT(20) NOT NULL, ADD PRIMARY KEY (month, project, id_employee);') 		
+			engine.execute("truncate des_persona;")
+			df.to_sql("des_persona", engine, if_exists = "append", index = False)
 
 	else:
 		print("El archivo que intenta consultar no existe")

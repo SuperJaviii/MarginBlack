@@ -14,7 +14,7 @@ CREATE TABLE `tls` (
   `id_employee` integer(20) NOT NULL,
   `month` integer(6) NOT NULL,
   `auditoria` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (id_employee, project, `month`)  
+  PRIMARY KEY ( `month`,id_employee, project)  
   );
 	CREATE INDEX idx_nombre_persona ON tls (persona);
 
@@ -54,7 +54,7 @@ CREATE TABLE `des_persona` (
   `month`			integer(6) NOT NULL,
   `subcontrating` 	integer(1) DEFAULT NULL,
   `auditoria` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (id_employee,`month`, project));
+  PRIMARY KEY (`month`,id_employee, project));
 	CREATE INDEX idx_fecha_baja ON des_persona (fecha_baja);
   
   
@@ -76,7 +76,7 @@ CREATE TABLE `des_persona` (
   `commercial_margin_gap` double DEFAULT NULL,
   `commercial_margin_gap_porcentaje` float DEFAULT NULL,
   `auditoria` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (project, `month`));
+  PRIMARY KEY ( `month`,project));
 	CREATE INDEX idx_project ON result (project);
     
     

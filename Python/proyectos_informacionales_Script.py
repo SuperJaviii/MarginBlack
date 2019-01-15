@@ -1,5 +1,4 @@
 import pandas as pd
-import pymysql
 import sqlalchemy
 import sys
 from pandas import ExcelWriter
@@ -38,15 +37,11 @@ if path.exists("Proyectos Informacionales.xlsx"):
 
 	if not exist or len(df) == 0: #Creo la tabla la primera vez
 		df = datos
-		df.to_sql("proyectos_informacionales", engine, if_exists = "replace", index = False)
+		engine.execute("truncate proyectos_informacionales;")
+		df.to_sql("proyectos_informacionales", engine, if_exists = "append", index = False)
 	else:
-		datos.to_sql("proyectos_informacionales", engine, if_exists = "replace", index = False)
-		
-	engine.execute("SET @@global.max_allowed_packet = 8388608;")
-	existe = engine.execute("show tables like 'proyectos_informacionales'");
-		
-	for row in existe:
-		engine.execute('ALTER TABLE '+dataBase+'.proyectos_informacionales  CHANGE COLUMN project project VARCHAR(45) NOT NULL,  ADD PRIMARY KEY (project);') 
+		engine.execute("truncate proyectos_informacionales;")
+		datos.to_sql("proyectos_informacionales", engine, if_exists = "append", index = False)
 
 	conn1 = engine.connect()
 	res1 = conn1.execute('select * from proyectos_informacionales')

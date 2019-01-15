@@ -1,5 +1,4 @@
 import pandas as pd
-import pymysql
 import sqlalchemy
 import sys
 from pandas import ExcelWriter
@@ -12,7 +11,8 @@ while True:
 		a = int(sys.argv[2])
 		break
 	except ValueError:
-		print (u"Lo sentimos. La fecha introducida no cumple el formato. Intentelo de nuevo :")
+		print (u"Lo sentimos. La fecha introducida no cumple el formato. Intentelo de nuevo")
+		exit()
 	
 year = str(datetime.now())[:4]
 b=str(a)
@@ -75,13 +75,9 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <= int(yea
 
 			df1 = pd.concat([df,datos])
 			df2 = df1.sort_values(by='month', ascending=True)
-			df2.to_sql("result", engine, if_exists = "replace", index = False)
+			engine.execute("truncate result;")
+			df2.to_sql("result", engine, if_exists = "append", index = False)
 
-		
-		engine.execute("SET @@global.max_allowed_packet = 8388608;")
-		existe = engine.execute("show tables like 'result'");
-		for row in existe:
-			engine.execute('ALTER TABLE ' +dataBase+'.result CHANGE COLUMN month month integer(6) NOT NULL, CHANGE COLUMN project project VARCHAR(20) NOT NULL, ADD PRIMARY KEY (month, project);') 
 		
 		conn1=engine.connect()
 		res1=conn1.execute('select * from result')

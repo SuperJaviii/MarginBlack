@@ -1,5 +1,4 @@
 import pandas as pd
-import pymysql
 import sqlalchemy
 import sys 
 from pandas import ExcelWriter
@@ -11,7 +10,8 @@ while True:
 		a = int(sys.argv[2])
 		break
 	except ValueError:
-		print (u"Lo sentimos. La fecha introducida no cumple el formato. Intentelo de nuevo :")
+		print (u"Lo sentimos. La fecha introducida no cumple el formato. Intentelo de nuevo")
+		exit()
 		
 year = str(datetime.now())[:4]
 b=str(a)
@@ -68,12 +68,8 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <= int(yea
 
 			df = pd.concat([df,datos])
 			df = df.sort_values(by='month', ascending=True)
-			df.to_sql("tls", engine, if_exists = "replace", index = False)
-
-		
-		existe = engine.execute("show tables like 'tls'");
-		for row in existe:
-			engine.execute('ALTER TABLE '+dataBase+'.tls CHANGE COLUMN project project VARCHAR(20) NOT NULL ,CHANGE COLUMN id_employee id_employee integer(20) NOT NULL, CHANGE COLUMN month month integer(6) NOT NULL, ADD PRIMARY KEY (month, project, id_employee);') 
+			engine.execute("truncate tls;")
+			df.to_sql("tls", engine, if_exists = "append", index = False)
 			
 		if usuario=='SERVIDOR':
 			writer = pd.ExcelWriter('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/historicos_black_margin/tls_acumulado.xlsx', engine='xlsxwriter')
