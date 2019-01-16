@@ -29,7 +29,7 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <= int(yea
 		.replace("á","a").replace("é","e").replace("í","i").replace("ó","o").replace("ú","u").replace("mes","month"), datos.columns))
 		
 		datos.horas_estabilizacion = list(map(lambda x: cambiarNAN(x), datos.horas_estabilizacion))
-		datos['auditoria']=pd.Series([])
+		datos['auditoria']=pd.Series([datetime.now() for x in range(len(datos.index))])
 		
 		datos1 = datos
 		

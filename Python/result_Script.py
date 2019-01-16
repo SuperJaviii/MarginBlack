@@ -35,7 +35,7 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <= int(yea
 			
 
 		datos = datos.drop(columnasTotal, axis=1)
-		datos['auditoria']=pd.Series([])
+		datos['auditoria']=pd.Series([datetime.now() for x in range(len(datos.index))])
 		datos = datos[datos['project'].str.contains("-000193-", case=True)]
 
 		datos1 = datos

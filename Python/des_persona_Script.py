@@ -38,7 +38,7 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <=  int(ye
 		datos.fecha_incorporacion = list(map(lambda x: cambiarNAN_fecha(x), datos.fecha_incorporacion))
 		datos.fecha_baja = list(map(lambda x: cambiarNAN_fecha(x), datos.fecha_baja))
 
-		datos['auditoria']=pd.Series([])
+		datos['auditoria']=pd.Series([datetime.now() for x in range(len(datos.index))])
 		datos['month']=pd.Series([a for x in range(len(datos.index))])
 		
 		datos1 = datos

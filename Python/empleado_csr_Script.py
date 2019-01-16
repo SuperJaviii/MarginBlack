@@ -31,9 +31,9 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <= int(yea
 		.replace("á","a").replace("é","e").replace("í","i").replace("ó","o").replace("ú","u").replace("account_month","month"), datos_ext.columns))
 
 		datos = datos.rename(columns={'employee':'id_employee'})
-		datos['auditoria']=pd.Series([])
+		datos['auditoria']=pd.Series([datetime.now() for x in range(len(datos.index))])
 		datos_ext = datos_ext.rename(columns={'employee':'id_employee'})
-		datos_ext['auditoria']=pd.Series([])
+		datos_ext['auditoria']=pd.Series([datetime.now() for x in range(len(datos.index))])
 
 		columnasBuenas = ["employee_category", "project", "hours","expense_month_adjusted", "month" , "id_employee", "auditoria"]
 

@@ -10,7 +10,7 @@ if path.exists("Proyectos Informacionales.xlsx"):
 	datos = pd.read_excel("Proyectos Informacionales.xlsx").fillna(" ")
 	datos.columns = list(map(lambda x: x.lower().replace(" ", "_").replace("-","_").replace("+","plus").replace("(","").replace(")","")
 	.replace("á","a").replace("é","e").replace("í","i").replace("ó","o").replace("ú","u"), datos.columns))
-	datos['auditoria']=pd.Series([])
+	datos['auditoria']=pd.Series([datetime.now() for x in range(len(datos.index))])
 
 	datos1 = datos
 		
@@ -49,7 +49,7 @@ if path.exists("Proyectos Informacionales.xlsx"):
 		
 	if len(actualiza) > 0:
 		actualiza = actualiza.drop("auditoria", axis = 1)
-		actualiza['auditoria']=pd.Series([])	
+		actualiza['auditoria']=pd.Series([datetime.now() for x in range(len(datos.index))])	
 		n = datos.merge(actualiza, how = "outer", suffixes = ['','_'], indicator = True)
 		ner = n.loc[n._merge.eq('left_only')]
 		ner = ner.drop("_merge", axis = 1)
