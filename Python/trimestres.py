@@ -24,7 +24,6 @@ if path.exists("trimestres.xlsx"):
 	dataBase = config[usuario]["dataBase"]
 
 	engine = sqlalchemy.create_engine('mysql+pymysql://'+user+':'+password+'@'+host+'/'+dataBase)
-	#engine = sqlalchemy.create_engine('mysql+pymysql://root:@localhost/margin')
 
 	exist = False
 	existe = engine.execute("show tables like 'trimestres'");

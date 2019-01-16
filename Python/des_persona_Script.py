@@ -34,33 +34,26 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <=  int(ye
 		.replace("í","i").replace("ó","o").replace("ú","u").replace("%","porcentaje_").replace("codigo_empleado","id_employee")
 		.replace("codigo_de_proyecto","project").replace("categoria","employee_category").replace("proyecto","descripcion_2"), datos.columns))
 
-		iter=0
-		for i in range(len(datos.id_employee)):
-			if str(datos.id_employee[i]) == "?" or str(datos.id_employee[i]) == "nan":
-				iter = iter - 1
-				datos.id_employee[i] = iter
 
 		datos.fecha_incorporacion = list(map(lambda x: cambiarNAN_fecha(x), datos.fecha_incorporacion))
 		datos.fecha_baja = list(map(lambda x: cambiarNAN_fecha(x), datos.fecha_baja))
-		datos = datos.fillna(int(0))
 
-		datos1=datos
+		datos['auditoria']=pd.Series([])
+		datos['month']=pd.Series([a for x in range(len(datos.index))])
 		
-		duplicados=list(datos.duplicated(subset=["month", "id_employee", "project"], keep='first'))
+		datos1 = datos
 		
-		j = 0
-		duplic= False
-		for i in datos.index:
-			if duplicados[j]==False:
-				datos1=datos1.drop(datos1[datos1.index == i].index)
-			else:
-				if not duplic:
-					print('Existen registros duplicados, podra encontrar los duplicados en duplicados_des_persona.xlsx, revise la carga')
-					duplic=True
-			j+=1
-				
-		datos1.to_excel('duplicados_des_persona.xlsx',index=False)
+		datos = datos.drop_duplicates(subset = ["month", "id_employee"], keep = 'first')
 		
+		datos = datos.dropna(subset = ["month", "id_employee"])
+		m = datos.merge(datos1, how = "outer", suffixes = ['','_'], indicator = True)
+		mer = m.loc[m._merge.eq('right_only')]
+		mer = mer.drop("_merge", axis = 1)
+		
+		datos = datos.reset_index(drop = True)
+		#*********
+		mer.to_excel('rechazados_des_persona.xlsx',index=False)
+		#***********
 		config = configparser.ConfigParser()
 		config.read("configuracion.ini")
 		usuario = sys.argv[1]
@@ -72,42 +65,25 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <=  int(ye
 		dataBase = config[usuario]["dataBase"]
 
 		engine = sqlalchemy.create_engine('mysql+pymysql://'+user+':'+password+'@'+host+'/'+dataBase)
-		#engine = sqlalchemy.create_engine('mysql+pymysql://root:@localhost/margin')
 
 		datos['subcontrating']=pd.Series([0 for x in range(len(datos.index))])
 		print(len(datos.employee_category))
 		for i in range(len(datos.employee_category)):
 			if str(datos.employee_category[i]) == str('SUBCONTR'):
 				datos.subcontrating[i]=1
-
-		datos['auditoria']=pd.Series([datetime.now() for x in range(len(datos.index))])
-		datos['month']=pd.Series([a for x in range(len(datos.index))])
-		datos = datos.drop_duplicates(subset=["month", "id_employee", "project"], keep="first")
 		
-		exist = False
-		existe = engine.execute("show tables like 'des_persona'");
-		for row in existe:
-			conn = engine.connect()
-			res = conn.execute('select * from des_persona')
-			df = pd.DataFrame(res.fetchall())
-			conn.close()
-			exist = True
-
-		if not exist or len(df) == 0: #Creo la tabla la primera vez
-			df = datos
-			df.to_sql("des_persona", engine, if_exists = "append", index = False)
-		else:
-			columnas = list(df.columns)
-			for k in range(len(columnas)):
-				df = df.rename(columns={columnas[k]:str(datos.columns[k])})
-
-			if a in list(df.month): #Si tengo que actualizar la tabla con datos que SI estan en la base
-				df = df.drop(df[df['month'] == a].index)
-
-			df = pd.concat([df,datos])
-			df = df.sort_values(by='month', ascending=True)
-			engine.execute("truncate des_persona;")
-			df.to_sql("des_persona", engine, if_exists = "append", index = False)
+		engine.execute("delete from black_margin.des_persona where month = "+b+";")
+		
+		datos.to_sql("des_persona", engine, if_exists = "append", index = False)
+		
+		if usuario == "SERVIDOR":
+			if path.exists('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/rechazados_black_margin/rechazados_des_persona.xlsx'):
+				rechazados = pd.read_excel('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/rechazados_black_margin/rechazados_des_persona.xlsx')
+				mer = pd.concat([rechazados, mer])
+			writer = pd.ExcelWriter('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/rechazados_black_margin/rechazados_des_persona.xlsx', engine='xlsxwriter')
+			mer.to_excel(writer, index=False)
+			writer.save()
+			
 
 	else:
 		print("El archivo que intenta consultar no existe")

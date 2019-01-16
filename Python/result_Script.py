@@ -35,28 +35,22 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <= int(yea
 			
 
 		datos = datos.drop(columnasTotal, axis=1)
-		datos = datos.fillna(0.0)
-		datos['auditoria']=pd.Series([datetime.now() for x in range(len(datos.index))])
+		datos['auditoria']=pd.Series([])
 		datos = datos[datos['project'].str.contains("-000193-", case=True)]
 
-		datos1=datos
+		datos1 = datos
 		
-		duplicados=list(datos.duplicated(subset=['month','project'], keep='first'))
-		j = 0
-		duplic=False
-		for i in datos.index:
-			if duplicados[j]==False:
-				datos1=datos1.drop(datos1[datos1.index == i].index)
-			else:
-				if not duplic:
-					print('Existen registros duplicados, podra encontrar los duplicados en duplicados_result.xlsx, revise la carga')
-					duplic=True
-			j+=1
-				
-		datos1.to_excel('duplicados_result.xlsx',index=False)
-		datos = datos.drop_duplicates(subset=['month','project'], keep="first")	
+		datos = datos.drop_duplicates(subset = ["month", "project"], keep = 'first')
 		
+		datos = datos.dropna(subset = ["month", "project"])
+		m = datos.merge(datos1, how = "outer", suffixes = ['','_'], indicator = True)
+		mer = m.loc[m._merge.eq('right_only')]
+		mer = mer.drop("_merge", axis = 1)
 		
+		datos = datos.reset_index(drop = True)
+		#*******
+		mer.to_excel('rechazados_result.xlsx',index=False)
+		#*******
 		config = configparser.ConfigParser()
 		config.read("configuracion.ini")
 		
@@ -69,34 +63,10 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <= int(yea
 		dataBase = config[usuario]["dataBase"]
 
 		engine = sqlalchemy.create_engine('mysql+pymysql://'+user+':'+password+'@'+host+'/'+dataBase)
-		#engine = sqlalchemy.create_engine('mysql+pymysql://root:@localhost/margin')
 		
-		exist = False
-		existe = engine.execute("show tables like 'result'");
-		for row in existe:
-			conn = engine.connect()
-			res = conn.execute('select * from result')
-			df = pd.DataFrame(res.fetchall())
-			conn.close()
-			exist = True
+		engine.execute("delete from black_margin.result where month = "+b+";")
+		datos.to_sql("result", engine, if_exists = "append", index = False)
 
-		if not exist or len(df) == 0: #Creo la tabla la primera vez
-			df = datos
-			df.to_sql("result", engine, if_exists = "append", index = False)
-		else:
-			columnas = list(df.columns)
-			for k in range(len(columnas)):
-				df = df.rename(columns={columnas[k]:str(datos.columns[k])})
-
-			if a in list(df.month): #Si tengo que actualizar la tabla con datos que SI estan en la base
-				df = df.drop(df[df['month'] == a].index)
-
-			df1 = pd.concat([df,datos])
-			df2 = df1.sort_values(by='month', ascending=True)
-			engine.execute("truncate result;")
-			df2.to_sql("result", engine, if_exists = "append", index = False)
-
-		
 		conn1=engine.connect()
 		res1=conn1.execute('select * from result')
 		acumulado=pd.DataFrame(res1.fetchall())
@@ -109,6 +79,13 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <= int(yea
 		if usuario == "SERVIDOR":
 			writer = pd.ExcelWriter('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/historicos_black_margin/result_acumulado.xlsx', engine='xlsxwriter')
 			acumulado.to_excel(writer, index=False)
+			writer.save()
+			if path.exists('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/rechazados_black_margin/rechazados_result.xlsx'):
+				rechazados = pd.read_excel('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/rechazados_black_margin/rechazados_result.xlsx')
+				mer = pd.concat([rechazados, mer])
+				
+			writer = pd.ExcelWriter('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/rechazados_black_margin/rechazados_result.xlsx', engine='xlsxwriter')
+			mer.to_excel(writer, index=False)
 			writer.save()
 			
 	else:

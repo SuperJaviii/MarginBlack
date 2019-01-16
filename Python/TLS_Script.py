@@ -18,7 +18,7 @@ b=str(a)
 if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <= int(year)+1):	
 	if path.exists("TLs_" +b+ ".xlsx"):
 		datos = pd.read_excel("TLs_" +b+ ".xlsx")
-
+			
 		def cambiarNAN(x):
 			if str(x) == "?" or str(x) == "nan":
 				return (0)
@@ -29,28 +29,23 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <= int(yea
 		.replace("á","a").replace("é","e").replace("í","i").replace("ó","o").replace("ú","u").replace("mes","month"), datos.columns))
 		
 		datos.horas_estabilizacion = list(map(lambda x: cambiarNAN(x), datos.horas_estabilizacion))
-		datos = datos.fillna(b)
-		datos['auditoria']=pd.Series([datetime.now() for x in range(len(datos.index))])
+		datos['auditoria']=pd.Series([])
 		
-		datos1=datos
+		datos1 = datos
 		
-		duplicados=list(datos.duplicated(subset=["month","project","id_employee"], keep='first'))
-			
-		j = 0
-		duplic = False
-		for i in datos.index:
-			if duplicados[j]==False:
-				datos1=datos1.drop(datos1[datos1.index == i].index)
-			else:
-				if not duplic:
-					print('Existen registros duplicados, podra encontrar los duplicados en duplicados_TLS.xlsx, revise la carga')
-					duplic=True
-			j+=1
-					
-		datos1.to_excel('duplicados_TLS.xlsx',index=False)
+		datos = datos.drop_duplicates(subset = ["month", "project", "id_employee"], keep = 'first')
 		
+		datos = datos.dropna(subset = ["month", "project", "id_employee"])
+		m = datos.merge(datos1, how = "outer", suffixes = ['','_'], indicator = True)
+		mer = m.loc[m._merge.eq('right_only')]
+		mer = mer.drop("_merge", axis = 1)
 		
-		datos = datos.drop_duplicates(subset=["month","project","id_employee"], keep="first")
+		if  len(mer) > 0: 
+			print("Existen registros rechazados, compruebe el xlsx generado con los rechazados")
+		datos = datos.reset_index(drop = True)
+		#****
+		mer.to_excel('duplicados_TLS.xlsx',index=False)
+		#********
 		
 		config = configparser.ConfigParser()
 		config.read("configuracion.ini")
@@ -64,38 +59,22 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <= int(yea
 		dataBase = config[usuario]["dataBase"]
 
 		engine = sqlalchemy.create_engine('mysql+pymysql://'+user+':'+password+'@'+host+'/'+dataBase)
-		#engine = sqlalchemy.create_engine('mysql+pymysql://root:@localhost/margin')
 		
-		exist = False
-		existe = engine.execute("show tables like 'tls'");
-		for row in existe:
-			conn = engine.connect()
-			res = conn.execute('select * from tls')
-			df = pd.DataFrame(res.fetchall())
-			conn.close()
-			exist = True
-
-		if not exist or len(df) == 0 : #Creo la tabla la primera vez
-			df = datos
-			df.to_sql("tls", engine, if_exists = "append", index = False)
-		else:
-			columnas = list(df.columns)
-			for k in range(len(columnas)):
-				df = df.rename(columns={columnas[k]:str(datos.columns[k])})
-
-			if a in list(df.month): #Si tengo que actualizar la tabla con datos que SI estan en la base
-				df = df.drop(df[df['month'] == a].index)
-
-			df = pd.concat([df,datos])
-			df = df.sort_values(by='month', ascending=True)
-			engine.execute("truncate tls;")
-			df.to_sql("tls", engine, if_exists = "append", index = False)
+		engine.execute("delete from black_margin.tls where month = "+b+";")
+		datos.to_sql("tls", engine, if_exists = "append", index = False)
 			
 		if usuario=='SERVIDOR':
 			writer = pd.ExcelWriter('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/historicos_black_margin/tls_acumulado.xlsx', engine='xlsxwriter')
 			df.to_excel(writer, index=False)
 			writer.save()
-
+			if path.exists('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/rechazados_black_margin/rechazados_tls.xlsx'):
+				rechazados = pd.read_excel('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/rechazados_black_margin/rechazados_tls.xlsx')
+				mer = pd.concat([rechazados, mer])
+				
+			writer = pd.ExcelWriter('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/rechazados_black_margin/rechazados_tls.xlsx', engine='xlsxwriter')
+			mer.to_excel(writer, index=False)
+			writer.save()
+			
 	else:
 		print("El archivo que intenta consultar no existe porque la fecha no coincide o no existe en este directorio")	
 else:
