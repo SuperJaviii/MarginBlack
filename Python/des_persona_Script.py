@@ -51,9 +51,7 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <=  int(ye
 		mer = mer.drop("_merge", axis = 1)
 		
 		datos = datos.reset_index(drop = True)
-		#*********
-		mer.to_excel('rechazados_des_persona.xlsx',index=False)
-		#***********
+		
 		config = configparser.ConfigParser()
 		config.read("configuracion.ini")
 		usuario = sys.argv[1]

@@ -63,12 +63,9 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <= int(yea
 		
 		if  len(mer) > 0: 
 			print("Existen registros rechazados, compruebe el xlsx generado con los rechazados")
+			
 		datos = datos.reset_index(drop = True)
 		
-		#*********		
-		mer.to_excel('duplicados_empleados.xlsx',index=False)
-		#**********
-	
 		config = configparser.ConfigParser()
 		config.read("configuracion.ini")
 		

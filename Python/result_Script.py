@@ -48,9 +48,7 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <= int(yea
 		mer = mer.drop("_merge", axis = 1)
 		
 		datos = datos.reset_index(drop = True)
-		#*******
-		mer.to_excel('rechazados_result.xlsx',index=False)
-		#*******
+		
 		config = configparser.ConfigParser()
 		config.read("configuracion.ini")
 		

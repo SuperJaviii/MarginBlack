@@ -24,9 +24,6 @@ if path.exists("Proyectos Informacionales.xlsx"):
 	if  len(mer) > 0: 
 		print("Existen registros rechazados, compruebe el xlsx generado con los rechazados")
 	datos = datos.reset_index(drop = True)
-	#*****			
-	mer.to_excel('rechazados_proyectos.xlsx',index=False)
-	#*******
 	
 	config = configparser.ConfigParser()
 	config.read("configuracion.ini")
