@@ -50,6 +50,9 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <=  int(ye
 		mer = m.loc[m._merge.eq('right_only')]
 		mer = mer.drop("_merge", axis = 1)
 		
+		if  len(mer) > 0: 
+			print("Existen registros rechazados, compruebe el xlsx generado con los rechazados")
+	
 		datos = datos.reset_index(drop = True)
 		
 		config = configparser.ConfigParser()
