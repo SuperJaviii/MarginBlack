@@ -23,77 +23,81 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <= int(yea
 		datos = propuestas.parse("detalle empleados CSR") 
 		datos_ext = propuestas.parse("detalle empleados External.Sub")
 
-		# tipificación nombres de columnas
-		datos.columns = list(map(lambda x: x.lower().replace(" ","_").replace("-","_").replace("+","plus").replace("(","").replace(")","")
-		.replace("á","a").replace("é","e").replace("í","i").replace("ó","o").replace("ú","u").replace("account_month","month"), datos.columns))
+		if len(datos) > 0 or len(datos_ext) > 0:
 
-		datos_ext.columns = list(map(lambda x: x.lower().replace(" ","_").replace("-","_").replace("+","plus").replace("(","").replace(")","")
-		.replace("á","a").replace("é","e").replace("í","i").replace("ó","o").replace("ú","u").replace("account_month","month"), datos_ext.columns))
+			# tipificación nombres de columnas
+			datos.columns = list(map(lambda x: x.lower().replace(" ","_").replace("-","_").replace("+","plus").replace("(","").replace(")","")
+			.replace("á","a").replace("é","e").replace("í","i").replace("ó","o").replace("ú","u").replace("account_month","month"), datos.columns))
 
-		datos = datos.rename(columns={'employee':'id_employee'})
-		datos['auditoria']=pd.Series([datetime.now() for x in range(len(datos.index))])
-		datos_ext = datos_ext.rename(columns={'employee':'id_employee'})
-		datos_ext['auditoria']=pd.Series([datetime.now() for x in range(len(datos.index))])
+			datos_ext.columns = list(map(lambda x: x.lower().replace(" ","_").replace("-","_").replace("+","plus").replace("(","").replace(")","")
+			.replace("á","a").replace("é","e").replace("í","i").replace("ó","o").replace("ú","u").replace("account_month","month"), datos_ext.columns))
 
-		columnasBuenas = ["employee_category", "project", "hours","expense_month_adjusted", "month" , "id_employee", "auditoria"]
+			datos = datos.rename(columns={'employee':'id_employee'})
+			datos['auditoria']=pd.Series([datetime.now() for x in range(len(datos.index))])
+			datos_ext = datos_ext.rename(columns={'employee':'id_employee'})
+			datos_ext['auditoria']=pd.Series([datetime.now() for x in range(len(datos.index))])
 
-		columnasTotal = list(datos.columns)
-		columnasTotal_ext = list(datos_ext.columns)
-		for e in columnasBuenas:
-			columnasTotal.remove(e)
-			columnasTotal_ext.remove(e)
+			columnasBuenas = ["employee_category", "project", "hours","expense_month_adjusted", "month" , "id_employee", "auditoria"]
 
-		datos = datos.drop(columnasTotal, axis=1)
-		datos_ext = datos_ext.drop(columnasTotal_ext, axis=1)
-		
-		#filtrar datos
-		datos = datos[datos['project'].str.contains("-000193-", case=True)]
-		datos_ext = datos_ext[datos_ext['project'].str.contains("-000193-", case=True)]
-		
-		datos = pd.concat([datos,datos_ext])
-		
-		datos1 = datos
-		
-		datos = datos.drop_duplicates(subset = ["month", "expense_month_adjusted", "project", "id_employee"], keep = 'first')
-		
-		datos = datos.dropna(subset = ["month", "expense_month_adjusted", "project", "id_employee"])
-		m = datos.merge(datos1, how = "outer", suffixes = ['','_'], indicator = True)
-		mer = m.loc[m._merge.eq('right_only')]
-		mer = mer.drop("_merge", axis = 1)
-		
-		if  len(mer) > 0: 
-			print("Existen registros rechazados, compruebe el xlsx generado con los rechazados")
+			columnasTotal = list(datos.columns)
+			columnasTotal_ext = list(datos_ext.columns)
+			for e in columnasBuenas:
+				columnasTotal.remove(e)
+				columnasTotal_ext.remove(e)
+
+			datos = datos.drop(columnasTotal, axis=1)
+			datos_ext = datos_ext.drop(columnasTotal_ext, axis=1)
 			
-		datos = datos.reset_index(drop = True)
-		
-		config = configparser.ConfigParser()
-		config.read("configuracion.ini")
-		
-		usuario = sys.argv[1]
-		usuario = usuario.upper()
-		password = config[usuario]["password"]
-		user = config[usuario]["user"]
-		host = config[usuario]["host"]
-		dataBase = config[usuario]["dataBase"]
-
-		engine = sqlalchemy.create_engine('mysql+pymysql://'+user+':'+password+'@'+host+'/'+dataBase)
+			#filtrar datos
+			datos = datos[datos['project'].str.contains("-000193-", case=True)]
+			datos_ext = datos_ext[datos_ext['project'].str.contains("-000193-", case=True)]
 			
-		engine.execute("delete from black_margin.empleado_csr where month = "+b+";")
-		try:
-			datos.to_sql("empleado_csr", engine, if_exists = "append", index = False)
-		except:
-			print("Error en el formato de la tabla, revise el excel y vuelva a realizar la tabla.")
-		
-		if usuario=='SERVIDOR':
-			writer = pd.ExcelWriter('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/historicos_black_margin/empleado_csr_acumulado.xlsx', engine='xlsxwriter')
-			datos.to_excel(writer, index=False)
-			writer.save()
-			if path.exists('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/rechazados_black_margin/rechazados_empleado_csr.xlsx'):
-				rechazados = pd.read_excel('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/rechazados_black_margin/rechazados_empleado_csr.xlsx')
-				mer = pd.concat([rechazados, mer])
-			writer = pd.ExcelWriter('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/rechazados_black_margin/rechazados_empleado_csr.xlsx', engine='xlsxwriter')
-			mer.to_excel(writer, index=False)
-			writer.save()
+			datos = pd.concat([datos,datos_ext])
+			
+			datos1 = datos
+			
+			datos = datos.drop_duplicates(subset = ["month", "expense_month_adjusted", "project", "id_employee"], keep = 'first')
+			
+			datos = datos.dropna(subset = ["month", "expense_month_adjusted", "project", "id_employee"])
+			m = datos.merge(datos1, how = "outer", suffixes = ['','_'], indicator = True)
+			mer = m.loc[m._merge.eq('right_only')]
+			mer = mer.drop("_merge", axis = 1)
+			
+			if  len(mer) > 0: 
+				print("Existen registros rechazados, compruebe el xlsx generado con los rechazados")
+				
+			datos = datos.reset_index(drop = True)
+			
+			config = configparser.ConfigParser()
+			config.read("configuracion.ini")
+			
+			usuario = sys.argv[1]
+			usuario = usuario.upper()
+			password = config[usuario]["password"]
+			user = config[usuario]["user"]
+			host = config[usuario]["host"]
+			dataBase = config[usuario]["dataBase"]
+
+			engine = sqlalchemy.create_engine('mysql+pymysql://'+user+':'+password+'@'+host+'/'+dataBase)
+				
+			engine.execute("delete from black_margin.empleado_csr where month = "+b+";")
+			try:
+				datos.to_sql("empleado_csr", engine, if_exists = "append", index = False)
+			except:
+				print("Error en el formato de la tabla, revise el excel y vuelva a realizar la tabla.")
+			
+			if usuario=='SERVIDOR':
+				writer = pd.ExcelWriter('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/historicos_black_margin/empleado_csr_acumulado.xlsx', engine='xlsxwriter')
+				datos.to_excel(writer, index=False)
+				writer.save()
+				if path.exists('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/rechazados_black_margin/rechazados_empleado_csr.xlsx'):
+					rechazados = pd.read_excel('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/rechazados_black_margin/rechazados_empleado_csr.xlsx')
+					mer = pd.concat([rechazados, mer])
+				writer = pd.ExcelWriter('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/rechazados_black_margin/rechazados_empleado_csr.xlsx', engine='xlsxwriter')
+				mer.to_excel(writer, index=False)
+				writer.save()
+		else: 
+			print("El excel no contiene datos.")
 	else:
 		print("El archivo que intenta consultar no existe porque la fecha no coincide o no existe en este directorio")
 else:

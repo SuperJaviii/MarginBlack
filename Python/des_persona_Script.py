@@ -29,65 +29,67 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <=  int(ye
 				return (fecha)
 			else:
 				return x
-				
-		datos.columns = list(map(lambda x: x.lower().replace(" ", "_").replace("-","_").replace("(","").replace(")","").replace("á","a").replace("é","e")
-		.replace("í","i").replace("ó","o").replace("ú","u").replace("%","porcentaje_").replace("codigo_empleado","id_employee")
-		.replace("codigo_de_proyecto","project").replace("categoria","employee_category").replace("proyecto","descripcion_2"), datos.columns))
+		
+		if len(datos) > 0:
+			datos.columns = list(map(lambda x: x.lower().replace(" ", "_").replace("-","_").replace("(","").replace(")","").replace("á","a").replace("é","e")
+			.replace("í","i").replace("ó","o").replace("ú","u").replace("%","porcentaje_").replace("codigo_empleado","id_employee")
+			.replace("codigo_de_proyecto","project").replace("categoria","employee_category").replace("proyecto","descripcion_2"), datos.columns))
 
 
-		datos.fecha_incorporacion = list(map(lambda x: cambiarNAN_fecha(x), datos.fecha_incorporacion))
-		datos.fecha_baja = list(map(lambda x: cambiarNAN_fecha(x), datos.fecha_baja))
+			datos.fecha_incorporacion = list(map(lambda x: cambiarNAN_fecha(x), datos.fecha_incorporacion))
+			datos.fecha_baja = list(map(lambda x: cambiarNAN_fecha(x), datos.fecha_baja))
 
-		datos['auditoria']=pd.Series([datetime.now() for x in range(len(datos.index))])
-		datos['month']=pd.Series([a for x in range(len(datos.index))])
-		
-		datos1 = datos
-		
-		datos = datos.drop_duplicates(subset = ["month", "id_employee"], keep = 'first')
-		
-		datos = datos.dropna(subset = ["month", "id_employee"])
-		m = datos.merge(datos1, how = "outer", suffixes = ['','_'], indicator = True)
-		mer = m.loc[m._merge.eq('right_only')]
-		mer = mer.drop("_merge", axis = 1)
-		
-		if  len(mer) > 0: 
-			print("Existen registros rechazados, compruebe el xlsx generado con los rechazados")
-	
-		datos = datos.reset_index(drop = True)
-		
-		config = configparser.ConfigParser()
-		config.read("configuracion.ini")
-		usuario = sys.argv[1]
-
-		usuario = usuario.upper()
-		password = config[usuario]["password"]
-		user = config[usuario]["user"]
-		host = config[usuario]["host"]
-		dataBase = config[usuario]["dataBase"]
-
-		engine = sqlalchemy.create_engine('mysql+pymysql://'+user+':'+password+'@'+host+'/'+dataBase)
-
-		datos['subcontrating']=pd.Series([0 for x in range(len(datos.index))])
-		print(len(datos.employee_category))
-		for i in range(len(datos.employee_category)):
-			if str(datos.employee_category[i]) == str('SUBCONTR'):
-				datos.subcontrating[i]=1
-		
-		engine.execute("delete from black_margin.des_persona where month = "+b+";")
-		
-		try:
-			datos.to_sql("des_persona", engine, if_exists = "append", index = False)
-		except:
-			print("Error en el formato de la tabla, revise el excel y vuelva a realizar la tabla.")
-		
-		if usuario == "SERVIDOR":
-			if path.exists('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/rechazados_black_margin/rechazados_des_persona.xlsx'):
-				rechazados = pd.read_excel('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/rechazados_black_margin/rechazados_des_persona.xlsx')
-				mer = pd.concat([rechazados, mer])
-			writer = pd.ExcelWriter('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/rechazados_black_margin/rechazados_des_persona.xlsx', engine='xlsxwriter')
-			mer.to_excel(writer, index=False)
-			writer.save()
+			datos['auditoria']=pd.Series([datetime.now() for x in range(len(datos.index))])
+			datos['month']=pd.Series([a for x in range(len(datos.index))])
 			
+			datos1 = datos
+			
+			datos = datos.drop_duplicates(subset = ["month", "id_employee"], keep = 'first')
+			
+			datos = datos.dropna(subset = ["month", "id_employee"])
+			m = datos.merge(datos1, how = "outer", suffixes = ['','_'], indicator = True)
+			mer = m.loc[m._merge.eq('right_only')]
+			mer = mer.drop("_merge", axis = 1)
+			
+			if  len(mer) > 0: 
+				print("Existen registros rechazados, compruebe el xlsx generado con los rechazados")
+		
+			datos = datos.reset_index(drop = True)
+			
+			config = configparser.ConfigParser()
+			config.read("configuracion.ini")
+			usuario = sys.argv[1]
+
+			usuario = usuario.upper()
+			password = config[usuario]["password"]
+			user = config[usuario]["user"]
+			host = config[usuario]["host"]
+			dataBase = config[usuario]["dataBase"]
+
+			engine = sqlalchemy.create_engine('mysql+pymysql://'+user+':'+password+'@'+host+'/'+dataBase)
+
+			datos['subcontrating']=pd.Series([0 for x in range(len(datos.index))])
+			print(len(datos.employee_category))
+			for i in range(len(datos.employee_category)):
+				if str(datos.employee_category[i]) == str('SUBCONTR'):
+					datos.subcontrating[i]=1
+			
+			engine.execute("delete from black_margin.des_persona where month = "+b+";")
+			
+			try:
+				datos.to_sql("des_persona", engine, if_exists = "append", index = False)
+			except:
+				print("Error en el formato de la tabla, revise el excel y vuelva a realizar la tabla.")
+			
+			if usuario == "SERVIDOR":
+				if path.exists('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/rechazados_black_margin/rechazados_des_persona.xlsx'):
+					rechazados = pd.read_excel('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/rechazados_black_margin/rechazados_des_persona.xlsx')
+					mer = pd.concat([rechazados, mer])
+				writer = pd.ExcelWriter('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/rechazados_black_margin/rechazados_des_persona.xlsx', engine='xlsxwriter')
+				mer.to_excel(writer, index=False)
+				writer.save()
+		else:
+			print("El excel no contiene datos.")
 
 	else:
 		print("El archivo que intenta consultar no existe")
