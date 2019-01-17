@@ -37,10 +37,16 @@ if path.exists("trimestres.xlsx"):
 	if not exist or len(df) == 0: #Creo la tabla la primera vez
 		df = datos
 		engine.execute("truncate trimestres;")
-		df.to_sql("trimestres", engine, if_exists = "append", index = False)
+		try:
+			df.to_sql("trimestres", engine, if_exists = "append", index = False)
+		except:
+			print("Error en el formato de la tabla, revise el excel y vuelva a realizar la tabla.")
 	else:
 		engine.execute("truncate trimestres;")
-		datos.to_sql("trimestres", engine, if_exists = "append", index = False)
+		try:
+			datos.to_sql("trimestres", engine, if_exists = "append", index = False)
+		except:
+			print("Error en el formato de la tabla, revise el excel y vuelva a realizar la tabla.")
 		
 	conn1 = engine.connect()
 	res1 = conn1.execute('select * from trimestres')

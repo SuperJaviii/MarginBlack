@@ -66,7 +66,10 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <= int(yea
 		engine = sqlalchemy.create_engine('mysql+pymysql://'+user+':'+password+'@'+host+'/'+dataBase)
 		
 		engine.execute("delete from black_margin.result where month = "+b+";")
-		datos.to_sql("result", engine, if_exists = "append", index = False)
+		try:
+			datos.to_sql("result", engine, if_exists = "append", index = False)
+		except:
+			print("Error en el formato de la tabla, revise el excel y vuelva a realizar la tabla.")
 
 		conn1=engine.connect()
 		res1=conn1.execute('select * from result')

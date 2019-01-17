@@ -79,7 +79,10 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <= int(yea
 		engine = sqlalchemy.create_engine('mysql+pymysql://'+user+':'+password+'@'+host+'/'+dataBase)
 			
 		engine.execute("delete from black_margin.empleado_csr where month = "+b+";")
-		datos.to_sql("empleado_csr", engine, if_exists = "append", index = False)
+		try:
+			datos.to_sql("empleado_csr", engine, if_exists = "append", index = False)
+		except:
+			print("Error en el formato de la tabla, revise el excel y vuelva a realizar la tabla.")
 		
 		if usuario=='SERVIDOR':
 			writer = pd.ExcelWriter('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/historicos_black_margin/empleado_csr_acumulado.xlsx', engine='xlsxwriter')

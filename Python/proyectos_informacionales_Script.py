@@ -53,10 +53,15 @@ if path.exists("Proyectos Informacionales.xlsx"):
 		n = datos.merge(actualiza, how = "outer", suffixes = ['','_'], indicator = True)
 		ner = n.loc[n._merge.eq('left_only')]
 		ner = ner.drop("_merge", axis = 1)
-		ner.to_sql("proyectos_informacionales", engine, if_exists = "append", index = False)
-	
+		try:
+			ner.to_sql("proyectos_informacionales", engine, if_exists = "append", index = False)
+		except:
+			print("Error en el formato de la tabla, revise el excel y vuelva a realizar la tabla.")
 	else:
-		datos.to_sql("proyectos_informacionales", engine, if_exists = "append", index = False)
+		try:
+			datos.to_sql("proyectos_informacionales", engine, if_exists = "append", index = False)
+		except:
+			print("Error en el formato de la tabla, revise el excel y vuelva a realizar la tabla.")
 		
 	conn1 = engine.connect()
 	res1 = conn1.execute('select * from proyectos_informacionales')
