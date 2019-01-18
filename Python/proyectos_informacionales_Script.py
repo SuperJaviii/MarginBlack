@@ -51,14 +51,19 @@ if path.exists("Proyectos Informacionales.xlsx"):
 			
 		if len(actualiza) > 0:
 			actualiza = actualiza.drop("auditoria", axis = 1)
-			actualiza['auditoria']=pd.Series([datetime.now() for x in range(len(datos.index))])	
+			auditoria = datos["auditoria"][0]
+			actualiza['auditoria'] = auditoria		
 			n = datos.merge(actualiza, how = "outer", suffixes = ['','_'], indicator = True)
 			ner = n.loc[n._merge.eq('left_only')]
 			ner = ner.drop("_merge", axis = 1)
-			try:
-				ner.to_sql("proyectos_informacionales", engine, if_exists = "append", index = False)
-			except:
-				print("Error en el formato de la tabla, revise el excel y vuelva a realizar la tabla.")
+			if len(ner) > 0:
+				try:
+					print(actualiza["auditoria"][0])
+					print(datos["auditoria"][0])
+					ner.to_sql("proyectos_informacionales", engine, if_exists = "append", index = False)
+				except:
+					print(len(ner))
+					print("Error en el formato de la tabla, revise el excel y vuelva a realizar la tabla.")
 		else:
 			try:
 				datos.to_sql("proyectos_informacionales", engine, if_exists = "append", index = False)
