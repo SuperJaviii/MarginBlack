@@ -7,7 +7,7 @@ import os.path as path
 from datetime import datetime
 
 if path.exists("Proyectos Informacionales.xlsx"):
-	datos = pd.read_excel("Proyectos Informacionales.xlsx").fillna(" ")
+	datos = pd.read_excel("Proyectos Informacionales.xlsx")
 
 	if len(datos) > 0:
 		datos.columns = list(map(lambda x: x.lower().replace(" ", "_").replace("-","_").replace("+","plus").replace("(","").replace(")","")
@@ -58,11 +58,8 @@ if path.exists("Proyectos Informacionales.xlsx"):
 			ner = ner.drop("_merge", axis = 1)
 			if len(ner) > 0:
 				try:
-					print(actualiza["auditoria"][0])
-					print(datos["auditoria"][0])
 					ner.to_sql("proyectos_informacionales", engine, if_exists = "append", index = False)
 				except:
-					print(len(ner))
 					print("Error en el formato de la tabla, revise el excel y vuelva a realizar la tabla.")
 		else:
 			try:
