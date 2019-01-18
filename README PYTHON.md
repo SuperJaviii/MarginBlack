@@ -18,8 +18,41 @@ Las librerías son las siguientes:
 		- Librería os.path, permite la comprobación de existencia del archivo inicial que contiene los datos inicial, los cuales serán usados en el proceso.
 		
 		- Librería datetime,en estos Scripts su uso es exclusivo para obtener la fecha y hora del día de la carga, guardada en el campo de auditoría.
-		
 
-	- trimestres.py: Este Script se encarga de la carga de la tabla de trimestres, la cual es cargada una única vez al principio del trabajo, por lo que este Script debe ser ejecutado el primero, antes de comenzar con alguna carga.
+		
+Además en todos los Scripts, se comprueba la validez de los 
+parámetros introducidos por pantalla por el usuario, a fin de que no se cometan fallos ni errores, también se comprueba la existencia del archivo excel del que se van a leer los datos.
+
+Por otro lado se solicita la lectura del archivo de contraseñas de MySQL para el usuario indicado por el cliente en la pantalla al ejecutar el Script de Python.
+
+Descripción general de los códigos de los Scripts de Python:
+
+En todos, se modifican los nombres originales de las columnas leidas del archivo de entrada con los datos, para que lo único que aparezca sea texto sin acentuar, ni simbología. El único simbolo que se permitirá y no será reemplazado será "_" utilizado como separación de palabras.
+
+Una vez realizados los cambios anteriores, se pasa a analizar la validez de los datos, eliminando aquellos registros que sean incorrectos o incompletos, y por tanto no utiles en los análisis posteriores con MicroStrategy. Todos estos registros eliminados serán guardados en un archivo excel bajo el nombre de "rechazados_(nombre del archivo de carga).xlsx" situado en el directorio C:/Users/MicroStrategyBI/Desktop/black_margin_backup/rechazados_black_margin/
+
+
+Posteriormente, se realiza la carga de los datos a MySQL, generando o actualizando la carga ya existente, con los nuevos datos introducidos.
+
+
+Por último en aquellas cargas en las que se requiere un registro acumulado de las cargas, se genera un archivo excel en el directorio C:/Users/MicroStrategyBI/Desktop/black_margin_backup/historicos_black_margin/
+bajo el nombre "(nombre de la carga)_acumulados.xlsx"
+
+Este proyecto cuenta con 6 Scripts de Python:
+	- trimestres.py, este realiza la carga de la tabla Trimestres.
+	
+	- result_Script.py que realiza la carga mensual del archivo de Result TH.
+	
+	- des_persona_Script.py que realiza la carga por mes de los archivo de datos que contiene la información de los empleados en proyectos del cliente, BBVA.
+	
+	- empleado_csr_Script.py, lleva a cabo la carga de los datos de los empleados haciendo distinción entre empleados propios de Everis y subcontratados, proyectos a los que computan sus horas, horas computadas, fechas de alta y baja en la compañía,....
+	
+	- proyectos_informacionales_Script.py, realiza la carga del archivo que contiene el nombre del proyecto y su descripción en ese momento, esta carga puede ser actualizada en caso de que aparezca un nuevo proyecto o alguno finalice y se desee eliminar de la carga anterior.
+	
+	- TLS_Script.py, de forma mensual este Script lleva a cabo la carga de  datos de los empleados que computan horas ese mes en proyectos del BBVA, incluyendo sus horas de computo al proyecto.
+	
+	
+
+	
 	
 	
