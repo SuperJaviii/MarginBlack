@@ -40,7 +40,7 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <= int(yea
 			m = datos.merge(datos1, how = "outer", suffixes = ['','_'], indicator = True)
 			mer = m.loc[m._merge.eq('right_only')]
 			mer = mer.drop("_merge", axis = 1)
-			
+
 			if  len(mer) > 0: 
 				print("Existen registros rechazados, compruebe el xlsx generado con los rechazados")
 				
@@ -64,7 +64,62 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <= int(yea
 				datos.to_sql("tls", engine, if_exists = "append", index = False)
 			except:
 				print("Error en el formato de la tabla, revise el excel y vuelva a realizar la tabla.")
+			
+			# Para obtener las personas que salen o entran cada mes
+			
+			conn1 = engine.connect()
+			res1 = conn1.execute('select * from tls')
+			acumulado= pd.DataFrame(res1.fetchall())
+			conn1.close()
+			columnas = list(acumulado.columns)
+			for k in range(len(columnas)):
+				acumulado = acumulado.rename(columns={columnas[k]:str(datos.columns[k])})
+				
+			primer_valor=acumulado.month[0]
+			ultimo_valor=acumulado.month[len(acumulado.month) - 1]
+			
+			acumulado_final=acumulado.drop(["project","proyecto","horas_estabilizacion","persona","auditoria","month"],axis=1)
+			resultado_final=pd.DataFrame()
+			while (primer_valor != ultimo_valor):
+				siguiente_valor=primer_valor + 1
+				datos2 =acumulado_final[acumulado.month == primer_valor]
+				datos3 = acumulado_final[acumulado.month == siguiente_valor]
+				
+				combinacion = datos2.merge(datos3, how = "outer", suffixes = ['','_'], indicator = True)
+				
+				entradas=combinacion.loc[combinacion._merge.eq('right_only')] 
+				salidas=combinacion.loc[combinacion._merge.eq('left_only')]
+				entradas=entradas.drop("_merge", axis = 1)
+				entradas['project']=0
+				for x in entradas.index:
+					entradas.project[x]=acumulado.project[x]
+				
+				entradas['variations']=0
+				entradas['month']=siguiente_valor
+				
+				salidas=salidas.drop("_merge", axis = 1)
+				salidas['project']=0
+				for x in salidas.index:
+					salidas.project[x]=acumulado.project[x]
+					
+				salidas['variations']=1
+				salidas['month']=primer_valor
+				
+				resultado=pd.concat([salidas,entradas])
+				resultado_final=pd.concat([resultado_final,resultado])
+				
+				primer_valor=siguiente_valor
 
+		
+			resultado_final['auditoria']=datetime.now() 
+			
+			
+			try:
+				engine.execute("truncate movimiento_empleados;")
+				resultado_final.to_sql("movimiento_empleados", engine, if_exists = "append", index = False)
+			except:
+				print("Error en el formato de la tabla, revise el excel y vuelva a realizar la tabla.")
+				
 			if usuario=='SERVIDOR':
 				writer = pd.ExcelWriter('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/historicos_black_margin/tls_acumulado.xlsx', engine='xlsxwriter')
 				datos.to_excel(writer, index=False)
