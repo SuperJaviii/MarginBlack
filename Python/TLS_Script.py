@@ -70,20 +70,30 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <= int(yea
 			conn1 = engine.connect()
 			res1 = conn1.execute('select * from tls')
 			acumulado= pd.DataFrame(res1.fetchall())
+			meses=engine.execute("SELECT month from black_margin.tls group by month;")
+			
 			conn1.close()
+			meses_list=[]
+			for i in meses:
+				meses_list.append(i)
+			meses_list=list(map(lambda x: str(x).replace(" ", "").replace("-","").replace("(","").replace(")","").replace(",",""), meses_list))
+			
+			
+			
 			columnas = list(acumulado.columns)
 			for k in range(len(columnas)):
 				acumulado = acumulado.rename(columns={columnas[k]:str(datos.columns[k])})
 				
-			primer_valor=acumulado.month[0]
-			ultimo_valor=acumulado.month[len(acumulado.month) - 1]
+			primer_valor=meses_list[0]
+			ultimo_valor=meses_list[len(meses_list) - 1]
 			
 			acumulado_final=acumulado.drop(["project","proyecto","horas_estabilizacion","persona","auditoria","month"],axis=1)
 			resultado_final=pd.DataFrame()
+			i=0
 			while (primer_valor != ultimo_valor):
-				siguiente_valor=primer_valor + 1
-				datos2 =acumulado_final[acumulado.month == primer_valor]
-				datos3 = acumulado_final[acumulado.month == siguiente_valor]
+				siguiente_valor=meses_list[i+1]
+				datos2 =acumulado_final[acumulado.month == int(primer_valor)]
+				datos3 = acumulado_final[acumulado.month == int(siguiente_valor)]
 				
 				combinacion = datos2.merge(datos3, how = "outer", suffixes = ['','_'], indicator = True)
 				
@@ -109,6 +119,7 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <= int(yea
 				resultado_final=pd.concat([resultado_final,resultado])
 				
 				primer_valor=siguiente_valor
+				i=i+1
 
 		
 			resultado_final['auditoria']=datetime.now() 
