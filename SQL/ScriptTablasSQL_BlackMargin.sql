@@ -7,13 +7,13 @@ USE black_margin;
 #Se crea tabla de horas cargadas por empleado, proyecto y fecha con el nombre tls
 #Esta tabla se usa para ver el nº de empleados en cada mes en proyectos BBVA y las horas cargadas en OneERP
 CREATE TABLE `tls` (
-  `project` varchar(20) NOT NULL,
-  `proyecto` varchar(60) DEFAULT NULL,
-  `persona` varchar(200) DEFAULT NULL,
+  `project` 		varchar(20) NOT NULL,
+  `proyecto` 		varchar(60) DEFAULT NULL,
+  `persona` 		varchar(200) DEFAULT NULL,
   `horas_estabilizacion` bigint(20) DEFAULT NULL,
-  `id_employee` integer(20) NOT NULL,
-  `month` integer(6) NOT NULL,
-  `auditoria` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `id_employee` 	integer(20) NOT NULL,
+  `month`			integer(6) NOT NULL,
+  `auditoria` 		TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY ( `month`,id_employee, project)  
   );
 	CREATE INDEX idx_nombre_persona ON tls (persona);
@@ -21,13 +21,13 @@ CREATE TABLE `tls` (
 
 #Se crea la tabla de horas de cierre por empleado, proyecto y fecha  
 CREATE TABLE `empleado_csr` (
-  `month` integer(6) NOT NULL,
+  `month` 			integer(6) NOT NULL,
   `expense_month_adjusted` integer(6) NOT NULL,
   `employee_category` varchar(20) DEFAULT NULL,
-  `project` varchar(20) NOT NULL,
-  `id_employee` integer NOT NULL,
-  `hours` integer DEFAULT NULL,
-  `auditoria` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `project` 		varchar(20) NOT NULL,
+  `id_employee` 	integer NOT NULL,
+  `hours` 			integer DEFAULT NULL,
+  `auditoria` 		TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`month`,id_employee, expense_month_adjusted, project)  
  );
 	CREATE INDEX idx_employee_category ON empleado_csr (employee_category);
@@ -60,13 +60,13 @@ CREATE TABLE `des_persona` (
   
 #Se crea la tabla de hechos result que contiene datos económicos de los proyectos BBVA 
   CREATE TABLE `result` (
-  `month` integer(6) NOT NULL,
-  `sector` varchar(10) DEFAULT NULL,
-  `un` varchar(20) DEFAULT NULL,
-  `project` varchar(20) NOT NULL,
+  `month` 			integer(6) NOT NULL,
+  `sector` 			varchar(10) DEFAULT NULL,
+  `un` 				varchar(20) DEFAULT NULL,
+  `project`			varchar(20) NOT NULL,
   `service_rendered_revenue` double DEFAULT NULL,
   `external_subcontrating_revenue` double DEFAULT NULL,
-  `net_revenue` double DEFAULT NULL,
+  `net_revenue` 	double DEFAULT NULL,
   `external_subcontrating_cost` double DEFAULT NULL,
   `other_expenses_cost` double DEFAULT NULL,
   `service_rendered_cost` double DEFAULT NULL,
@@ -75,28 +75,38 @@ CREATE TABLE `des_persona` (
   `contract_margin_gap_porcentaje` double DEFAULT NULL,
   `commercial_margin_gap` double DEFAULT NULL,
   `commercial_margin_gap_porcentaje` float DEFAULT NULL,
-  `auditoria` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `auditoria`		TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY ( `month`,project));
 	CREATE INDEX idx_project ON result (project);
     
     
 #Se crea la tabla de dimensiones proyectos_informacionales para ampliar información de los proyectos 
   CREATE TABLE `proyectos_informacionales` (
-  `project` varchar(20) NOT NULL,
-  `descripcion` varchar(40) DEFAULT NULL,
-  `descripcion_2` varchar(40) DEFAULT NULL,
-  `area` varchar(20) DEFAULT NULL,
-  `auditoria` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `project` 		varchar(20) NOT NULL,
+  `descripcion` 	varchar(40) DEFAULT NULL,
+  `descripcion_2` 	varchar(40) DEFAULT NULL,
+  `area` 			varchar(20) DEFAULT NULL,
+  `auditoria`		TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (project));
 	CREATE INDEX idx_area ON proyectos_informacionales (area);
 
 
 #Se crea la tabla de dimensiones trimestres para ampliar información de las fechas 
   CREATE TABLE `trimestres` (
-  `month` integer(6) NOT NULL,
-  `year` year NOT NULL,
-  `Q` varchar(4) DEFAULT NULL,
-  `fiscal_year` year DEFAULT NULL,
-  `auditoria` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `month` 			integer(6) NOT NULL,
+  `year`			year NOT NULL,
+  `Q` 				varchar(4) 	DEFAULT NULL,
+  `fiscal_year` 	year DEFAULT NULL,
+  `auditoria` 		TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`month`,`year`));
 	CREATE INDEX idx_trismestre ON trimestres (Q);
+    
+#Se crea tabla para poder comparar entre los diferentes meses de TLS y saber entradas y salidas
+CREATE TABLE `movimiento_empleados` (
+  `id_employee` 	integer(20) NOT NULL,
+  `project`			varchar(20) NOT NULL,
+  `variations` 		integer(1) NOT NULL,
+  `month` 			integer(6) NOT NULL,
+  `auditoria` 		TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`month`,id_employee, project)  
+  );
