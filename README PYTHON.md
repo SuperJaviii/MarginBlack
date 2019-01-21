@@ -1,3 +1,16 @@
+README DEL SCRIPT DE SQL
+
+Creacción de la base de datos black_margin y las diferentes tablas con las primary keys e índices necesarios. Tablas creadas:
+		-Result
+		-Tls
+		-Empleados_csr
+		-Des_persona
+		-Movimiento_empleados
+		-Proyectos_informacionales
+		-Trimestres
+
+Este script debe ejecutarse sólo la primera vez, cuando no existe la base de datos ni las tablas en MySql.
+
 README DE LOS PYTHONS
 
 Este proyecto cuenta con 6 scripts de Python, utilizados para la lectura, carga y limpieza de los datos iniciales, además de encargarse de la eliminación de errores y relacionar MySQL con Python, para que las tablas queden cargadas y listas para su uso en MicroStrategy.
@@ -49,9 +62,9 @@ Este proyecto cuenta con 6 Scripts de Python:
 	
 	- proyectos_informacionales_Script.py, realiza la carga del archivo que contiene el nombre del proyecto y su descripción en ese momento, esta carga puede ser actualizada en caso de que aparezca un nuevo proyecto o alguno finalice y se desee eliminar de la carga anterior.
 	
-	- TLS_Script.py, de forma mensual este Script lleva a cabo la carga de  datos de los empleados que computan horas ese mes en proyectos del BBVA, incluyendo sus horas de computo al proyecto.
+	- TLS_Script.py, de forma mensual este Script lleva a cabo la carga de  datos de los empleados que computan horas ese mes en proyectos del BBVA en la tabla tls, incluyendo sus horas de computo. Además, este script hace una comparativa entre meses para determinar las entradas y salidas en cada mes, cargando estos datos en la tabla movimiento_empleados.
 	
-	
+
 
 	
 	
