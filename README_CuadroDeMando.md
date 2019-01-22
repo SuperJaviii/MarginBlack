@@ -82,9 +82,59 @@ FILTROS: La visualizacion "NUMERO DE EMPLEADOS POR PROYECTO" se puede usar como 
 	 Se puede seleccionar un mes en "NUMERO DE EMPLEADOS" y simultaneamente un proyecto en "NUMERO DE EMPLEADOS POR PROYECTO" 
 	 si se quiere ver la informacion de los empleados de un solo proyecto en un mes en concreto.
 
+PESTAÑA 3: MOVIMIENTOS
+
+Esta pestaña consta de cuatro visualizaciones y una pestaña de filtros aplicable a las tres últimas visualizaciones y a la primera 
+de las cuatro se le puede aplicar un filtro mensual, que tiene repercusión en las otras tres y puede darse de forma simultanea con
+el filtro referenciado previamente.
+
+* KPI "ENTRADAS": muestra el número de empleados que entran a los proyectos del BBVA, dependiendo del filtro que se este aplicando.
+
+* KPI "SALIDAS": muestra el número de empleados que salen de los proyectos del BBVA, dependiendo del filtro que se este aplicando.
+
+* Visualización "ENTRADAS Y SALIDAS DE EMPLEADOS POR MES": Es un gráfico de barras que representa para cada mes informado el número 
+					 de empleados nuevos en los proyectos (en color verde) y el número de empleados que abandonan la empresa (en color granate). 
+					 Haciendo click sobre cualquiera de las barras  filtramos en la visualización inferior por MES.
+						
+					 Al agregar nuevos datos de TLS iran apareciendo nuevas barras en este gráfico, y por tanto iran informándose datos que hasta 
+					 el momento no se conocían. También se puede filtrar por año, a fin de no mostrar el hístorico completo de datos informados.
+
+*Visualización "MOVIMIENTOS EMPLEADOS": se trata de una tabla resumen del gráfico de barras que aparece en la visualización anterior, donde se recoge 
+					 el nombre de la persona que es entrada o salida de los proyectos, junto a su id de empleado, y un columna que informa el motivo 
+					 por el que aparece en dicha tabla, Entrada o Salida.
+					 
+					 Esta tabla puede aparecer filtrada de varias formas:
+					 
+						- Sin filtro, es decir apareceran todos los datos informados hasta el momento.
+						
+						- Filtrado solo por mes, en este caso se mostraran las Entradas y Salidas de empleados para el mes seleccionado, 
+						tras pinchar sobre una de las barras del gráfico de barras.
+						
+						- Filtrado por entradas, haciendo uso del filtro que aparece en la parte superior derecha, bajo el logo corporativo,
+						usando "Entradas" se mostrara en esta tabla para todos los meses las entradas para cada uno de ellos.
+						
+						- Filtrado por salidas, de forma análoga al anterior pero usando la casilla "Salidas" del filtro, aparecerá en esta tabla para
+						todos los meses las salidas para cada uno de ellos.
+						
+						- Filtrado por mes y entradas/salidas, se trata de un filtro combinado, conseguido tras pinchar sobre una de las barras del 
+						gráfico de la primera visualización, para elegir el mes y posteriormente en una de las opciones del filtro situado en la 
+						parte superior derecha(Entradas/Salidas), consiguiendo posteriormente un visualización en esta tabla de las entradas o 
+						salidas unicamente para el mes seleccionado.
+						
 
 
-PESTAÑA 3: ESTABILIZACION-CIERRE
+FILTROS: Solo la primera de las visualizaciones de esta pestaña actúa como filtro mensual que afecta a la visualización "MOVIMIENTOS EMPLEADOS" y
+	 a los KPI.
+	 
+	 Además esta pestaña cuenta con un filtro que solo es activado pinchando sobre él, y se encuentra situado en la parte superior derecha.
+	 
+	 En primer lugar hay un filtro por entradas, que permite ver los indicadores anteriormente expuestos de las entradas de empleados,
+	 y que se aplica a la segunda visualización. 
+	 Por otra parte hay un filtro de salidas, que permite ver los indicadores anteriormente expuestos de las salidas de empleados,
+	 y que se aplica a la segunda visualización.
+
+	 
+PESTAÑA 4: ESTABILIZACION-CIERRE
 
 Esta pestaña consta de una unica visualizacion a la que se le pueden aplicar tres filtros, tanto por separado como de manera 
 simultanea. 
@@ -101,7 +151,7 @@ simultanea.
 
 
 
-PESTAÑA 4: TM/TM-1 Presupuesto:
+PESTAÑA 5: TM/TM-1 Presupuesto:
 
 Esta pestaña consta de dos visualizaciones a las que se le pueden aplicar dos filtros que se encuentran en la parte superior de la 
 misma.

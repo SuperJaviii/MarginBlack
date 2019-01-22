@@ -64,6 +64,10 @@ Este proyecto cuenta con 6 Scripts de Python:
 	
 	- TLS_Script.py, de forma mensual este Script lleva a cabo la carga de  datos de los empleados que computan horas ese mes en proyectos del BBVA en la tabla tls, incluyendo sus horas de computo. Además, este script hace una comparativa entre meses para determinar las entradas y salidas en cada mes, cargando estos datos en la tabla movimiento_empleados.
 	
+El Script  TLS_Script.py tiene además, a diferencia de los demás Scripts tiene un código extra para el calculo del número de personas que entran y salen de proyectos del BBVA
+por mes, esto se lleva a cabo comparando los datos introducidos por el usuario en los archivos de TLS de dos meses consecutivos, en caso de faltar algún mes intermedio esta comparación se realiza con el mes
+previo del cual se tengan datos informados. Por último este código genera la carga de una nueva tabla movimiento_empleados en la base de datos black_margin de MySQL.
+Esto se ha llevado a cabo para obtener en la visualización final la muestra por mes del número de personas que entran y salen de los proyectos del cliente (BBVA).
 
 
 	
