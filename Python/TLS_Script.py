@@ -34,9 +34,9 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <= int(yea
 			
 			datos1 = datos
 			
-			datos = datos.drop_duplicates(subset = ["month", "project", "id_employee"], keep = 'first')
+			datos = datos.drop_duplicates(subset = ["id_employee", "month", "project"], keep = 'first')
 			
-			datos = datos.dropna(subset = ["month", "project", "id_employee"])
+			datos = datos.dropna(subset = ["id_employee", "month" , "project"])
 			m = datos.merge(datos1, how = "outer", suffixes = ['','_'], indicator = True)
 			mer = m.loc[m._merge.eq('right_only')]
 			mer = mer.drop("_merge", axis = 1)
@@ -87,12 +87,12 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <= int(yea
 			primer_valor=meses_list[0]
 			ultimo_valor=meses_list[len(meses_list) - 1]
 			
-			acumulado_final=acumulado.drop(["project","proyecto","horas_estabilizacion","persona","auditoria","month"],axis=1)
-			resultado_final=pd.DataFrame()
+			acumulado_final = acumulado.drop(["project","proyecto","horas_estabilizacion","persona","auditoria","month"],axis=1)
+			resultado_final = pd.DataFrame()
 			i=0
 			while (primer_valor != ultimo_valor):
-				siguiente_valor=meses_list[i+1]
-				datos2 =acumulado_final[acumulado.month == int(primer_valor)]
+				siguiente_valor = meses_list[i+1]
+				datos2 = acumulado_final[acumulado.month == int(primer_valor)]
 				datos3 = acumulado_final[acumulado.month == int(siguiente_valor)]
 				
 				combinacion = datos2.merge(datos3, how = "outer", suffixes = ['','_'], indicator = True)
@@ -100,36 +100,34 @@ if (len(b)==6) and (int(b[4:])<13) and (int(b[4:])>0) and (int(b[:4]) <= int(yea
 				entradas=combinacion.loc[combinacion._merge.eq('right_only')] 
 				salidas=combinacion.loc[combinacion._merge.eq('left_only')]
 				entradas=entradas.drop("_merge", axis = 1)
-				entradas['project']=0
-				for x in entradas.index:
-					entradas.project[x]=acumulado.project[x]
+
+				entradas = entradas.drop_duplicates(subset = ["id_employee"], keep = 'first')
 				
-				entradas['variations']=0
-				entradas['month']=siguiente_valor
+				entradas['variations'] = 0
+				entradas['month'] = siguiente_valor
 				
 				salidas=salidas.drop("_merge", axis = 1)
-				salidas['project']=0
-				for x in salidas.index:
-					salidas.project[x]=acumulado.project[x]
-					
-				salidas['variations']=1
-				salidas['month']=primer_valor
 				
-				resultado=pd.concat([salidas,entradas])
-				resultado_final=pd.concat([resultado_final,resultado])
+				salidas = salidas.drop_duplicates(subset = ["id_employee"], keep = 'first')
+
+					
+				salidas['variations'] = 1
+				salidas['month'] = primer_valor
+				
+				resultado = pd.concat([salidas,entradas])
+				resultado_final = pd.concat([resultado_final,resultado])
 				
 				primer_valor=siguiente_valor
-				i=i+1
+				i += 1
 
 		
 			resultado_final['auditoria']=datetime.now() 
-			
-			
-			try:
-				engine.execute("truncate movimiento_empleados;")
-				resultado_final.to_sql("movimiento_empleados", engine, if_exists = "append", index = False)
-			except:
-				print("Error en el formato de la tabla, revise el excel y vuelva a realizar la tabla.")
+						
+			#try:
+			engine.execute("truncate movimiento_empleados;")
+			resultado_final.to_sql("movimiento_empleados", engine, if_exists = "append", index = False)
+			#except:
+			#	print("Error en el formato de la tabla, revise el excel y vuelva a realizar la tabla. asjadjajdasjdsja")
 				
 			if usuario=='SERVIDOR':
 				writer = pd.ExcelWriter('C:/Users/MicroStrategyBI/Desktop/black_margin_backup/historicos_black_margin/tls_acumulado.xlsx', engine='xlsxwriter')
